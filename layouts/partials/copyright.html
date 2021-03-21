@@ -6,7 +6,7 @@
 <!-- Because this project is under MIT licence. -->
 &copy;
 	{{ if .Site.Copyright }}
-	{{ .Site.Copyright }}
+	{{ .Site.Copyright | markdownify}}
 	{{ else }}
 	{{.Site.Home.Date.Year}} {{.Site.Title}}
 	{{ end }}
