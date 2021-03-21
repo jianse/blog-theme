@@ -1,6 +1,9 @@
 <head>
+{{ if .IsHome }}
 <title>{{.Title}}</title>
-
+{{ else }}
+<title>{{.Title}} | {{.Site.Title}}</title>
+{{ end }}
 {{ $description := .Params.description}}
 {{if .IsHome}}
   {{ $description = .Site.Params.description}}
@@ -46,6 +49,8 @@
 <link rel="icon" href="{{ .Site.Params.favicon | absURL }}">
 <!-- favicon -->
 {{ end }}
+
+{{- partial "favicon.html" . -}}
 
 {{ $styles := resources.Get "scss/journal.scss" | toCSS | minify | fingerprint }}
 <link rel="stylesheet" href="{{ $styles.Permalink }}" integrity="{{ $styles.Data.Integrity }}" media="screen">
