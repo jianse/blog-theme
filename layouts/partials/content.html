@@ -1,4 +1,7 @@
+{{$content := .Content }}
 {{ if .Site.Params.enableBlockquoteEnhance }}
 {{/*  blockquote enhance  */}}
-{{- .Content | replaceRE "<blockquote>\\s<p>\\[(\\w+)]" "<blockquote class=\"$1\">" | safeHTML -}}
+{{ $content = replaceRE "<blockquote>\\s<p>\\[(\\w+)]" "<blockquote class=\"$1\">" $content }}
 {{ end }}
+
+{{- $content | safeHTML -}}
