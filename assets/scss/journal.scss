@@ -1,5 +1,7 @@
 $color-accent: #1976d2;
-//$color-accent: #330000;
+$color-warn: #fa8c16;
+$color-error: #ff4d4f;
+$color-success: #52c41a;
 $back-container-background: #fcfcfc;
 $front-container-background: #ffffff;
 
@@ -27,6 +29,9 @@ $tag-category-title-size: 22px;
 $toc-size: 16px;
 
 $dark-accent: darken($color-accent, 10%);
+$dark-warn: darken($color-warn, 10%);
+$dark-error: darken($color-error, 10%);
+$dark-success: darken($color-success, 10%);
 $deep-dark-accent: darken($color-accent, 50%);
 $color-text: $deep-dark-accent;
 
@@ -51,6 +56,8 @@ $single-column-toc-size: 14px;
 
 $h1: 30px;
 $h-diff: 3px;
+
+@import "blockquote";
 
 ::selection {
   background: rgba($color-accent, 0.4);
@@ -148,19 +155,6 @@ pre {
   }
   code {
     padding: 0;
-  }
-}
-
-blockquote {
-  padding: 10px 20px;
-  border-left: 3px solid rgba($color-accent, 0.7);
-  color: $dark-accent;
-  background: rgba($color-accent, 0.05);
-  p {
-    margin-bottom: 0;
-  }
-  * {
-    color: $dark-accent;
   }
 }
 

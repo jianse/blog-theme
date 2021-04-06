@@ -67,7 +67,7 @@
                 {{ else }}
                 <div class="post-body" v-pre>
                 {{ end }}
-                    {{.Content}}
+                    {{- partial "content.html" . -}}
                     {{ if not .Lastmod.IsZero }}
                     <HR width="100%" id="EOF">
 		    <p style="color:#777;">{{ i18n "last_mod_on" .Page.Lastmod }}</p>

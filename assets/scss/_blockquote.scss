@@ -1,0 +1,74 @@
+blockquote{
+    position: relative;
+    padding: 10px 20px;
+    border-left: 3px solid rgba($color-accent, 0.7);
+    color: $dark-accent;
+    background: rgba($color-accent, 0.05);
+    p {
+      margin-bottom: 0;
+    }
+    * {
+      color: $dark-accent;
+    }
+    
+}
+
+blockquote.info, blockquote.warn, blockquote.error,blockquote.success{
+    &::before{
+        left: - $post-body-size + 4px;
+        position: absolute;
+        height: 20px;
+        width: 20px;
+        line-height: 20px;
+        text-align: center;
+        border-radius: 100%;
+        color:snow;
+    }
+}
+
+blockquote.info{
+    &::before{
+        content:"i";
+        background-color: $dark-accent;
+    }
+}
+
+blockquote.warn {
+    border-color: rgba($color-warn, 0.7);
+    background: rgba($color-warn, 0.05);
+    color: $dark-warn;
+    * {
+        color: $dark-warn;
+        
+    }
+    &::before{
+        content: "!";
+        background-color: $dark-warn;
+    }
+}
+
+blockquote.success{
+    border-color: rgba($color-success, 0.7);
+    background: rgba($color-success, 0.05);
+    color: $dark-success;
+    *{
+        color: $dark-success;
+    }
+    &::before{
+        content: "\2714";
+        background-color: $color-success;
+    }
+}
+
+blockquote.error{
+    border-color: rgba($color-error, 0.7);
+    background: rgba($color-error, 0.05);
+    color: $dark-error;
+    *{
+        color: $dark-error;
+    }
+    &::before{
+        content: "\2716";
+        background-color: $color-error;
+    }
+}
