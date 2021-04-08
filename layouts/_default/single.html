@@ -27,26 +27,42 @@
                     {{ end }}
                     <div class="post-meta">
                         {{ if .Params.date}}
-                        <time itemprop="datePublished">
+                        <span title="发布时间">
+                            <i class="material-icons">publish</i>
+                            <time itemprop="datePublished">
                             {{ i18n "format_date_tosec" .PublishDate }}
-                        </time>
+                            </time>
+                        </span>
+                        {{ end }}
+
+                        {{ if not .Lastmod.IsZero }}
+                        <span title="最后修改时间">
+                            <i class="material-icons">create</i>
+                            <time itemprop="lastMod">{{ i18n "format_date_tosec" .Page.Lastmod }}</time>
+                        </span>
                         {{ end }}
 
                         {{ if .Params.categories }}
-                            <i class="material-icons" style="">folder</i>
+                        <span title="分类">
+                            <i class="material-icons">folder</i>
                                 <a href="{{ "/categories/" | relLangURL }}{{ .Params.categories | urlize }}">{{ .Params.categories }}</a>
                                 &nbsp;
+                        </span>
+                            
                         {{ end }}
 
                         {{ if gt .Params.tags 0 }}
-                            <i class="material-icons" style="">label</i>
+                            <span title="标签">
+                            <i class="material-icons">label</i>
                             {{ range .Params.tags }}
                                 <a href="{{ "/tags/" | relLangURL }}{{ . | urlize }}">{{ . }}</a>
                                 &nbsp;
                             {{ end }}
+                            </span>
                         {{ end }}
                         {{ if .Site.Params.enableReadingTime }}
-                            <i class="material-icons" style="">schedule</i>
+                        <span title="阅读用时">
+                            <i class="material-icons">schedule</i>
                             {{ $readTime := mul (div (countwords .Content) 220.0) 60 }}
 
                             {{ $minutes := math.Floor (div $readTime 60) }}
@@ -56,6 +72,7 @@
                             {{ $minutes }} {{ cond (eq $minutes 1) "minute" "min" }}
                             {{ end }}
                             {{ $seconds }} {{ cond (eq $seconds 1) "second" "s" }}.
+                        </span>
                         {{ end }}
                     </div>
                 </div>
