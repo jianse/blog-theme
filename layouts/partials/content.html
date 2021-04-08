@@ -5,7 +5,11 @@
 {{ end }}
 
 {{ if .Site.Params.enableCodeLangTag }}
-{{ $content = replaceRE `<pre (.+?><code class="(\w+-(\w+))")` `<pre class="$2" data-lang="$3" $1` $content}}
+{{ $content = replaceRE `<pre (.+?><code class="(\w+-(\w+))")` `<pre class="$2" data-lang="$3" $1` $content }}
 {{end}}
+
+{{ if .Site.Params.openLinkInNewTab }}
+{{ $content = replaceRE `<a` `<a target="_blank"` $content }}
+{{ end}}
 
 {{- $content | safeHTML -}}
