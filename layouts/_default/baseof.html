@@ -1,7 +1,13 @@
 <!DOCTYPE html>
 <html lang={{ .Site.LanguageCode}}>
     {{- partial "head.html" . -}}
-    <body>
+    <body data-enable-auto-dark-mode="{{.Site.Params.enableAutoDarkMode}}"
+          {{ if and .Site.Params.enableValine .IsPage }}
+          data-enable-valine="true"
+          data-valine-appid="{{.Site.Params.valine.appId}}"
+          data-valine-appkey="{{.Site.Params.valine.appKey}}"
+          {{ end }}
+    >
     	<div id="app">
             {{- partial "sidebar.html" . -}}
             {{- partial "extrabar.html" . -}}

@@ -55,10 +55,10 @@ app = new Vue({
             toggleDarkMode() {
                 this.isDarkMode = !this.isDarkMode;
                 if (this.isDarkMode==true){
-                    document.cookie = "night=1;path=/";
+                    window.localStorage.setItem("night",1);
                     document.body.classList.add("night");
                 } else {
-                    document.cookie = "night=0;path=/";
+                    window.localStorage.setItem("night",0);
                     document.body.classList.remove("night");
                 }
             },
@@ -85,12 +85,12 @@ app = new Vue({
             return check;
         };
         // From https://www.jdeal.cn/archives/Dark.html
-        var night = document.cookie.replace(/(?:(?:^|.*;\s*)night\s*\=\s*([^;]*).*$)|^.*$/, "$1");
-        if (night==""){
+        var night = window.localStorage.getItem("night");
+        if (night!="1"){
             if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                {{ if .Site.Params.enableAutoDarkMode }}
-                this.toggleDarkMode();
-                {{ end }}
+                if(document.body.dataset.enableAutoDarkMode=="true"){
+                    this.toggleDarkMode();
+                }
             }
         }else{
             // If night is not empty
@@ -105,16 +105,16 @@ app = new Vue({
         this.handleResize();
         this.mounted = true;
 
-        {{ if and (.Site.Params.enableValine) (.IsPage) }}
+        if(document.body.dataset.enableValine=="true"){
             new Valine({
                 el: '#vcomments',
-                appId: {{.Site.Params.valine.appId}},
-                appKey: {{.Site.Params.valine.appKey}},
+                appId: document.body.dataset.valineAppid,
+                appKey: document.body.dataset.valineAppkey,
                 requiredFields: ['nick','mail'],
                 enableQQ: true,
                 recordIP: true,
             })
-        {{ end }}
+        }
     },
     updated() {
         this.updateZoom();
