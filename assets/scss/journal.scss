@@ -58,6 +58,7 @@ $h1: 30px;
 $h-diff: 3px;
 
 @import "blockquote";
+@import "codeblock";
 
 ::selection {
   background: rgba($color-accent, 0.4);
@@ -132,30 +133,6 @@ table {
 button {
   cursor: hand;
   cursor: pointer;
-}
-
-code {
-  color: $dark-accent;
-  background: rgba($color-accent, 0.07) !important;
-  padding: 2px 5px;
-  border-radius: 3px;
-  font-family: $mono-font-list;
-}
-
-pre {
-  //background: rgba(46,46,46, 1) !important;
-  //color: rgba(255,255,255, 1);
-  background: rgba($color-accent, 0.07);
-  padding: 12px 15px;
-  border-radius: 5px;
-  font-family: $mono-font-list;
-  * {
-    background: none !important;
-    font-family: $mono-font-list !important;
-  }
-  code {
-    padding: 0;
-  }
 }
 
 a {
@@ -515,9 +492,6 @@ a {
     bottom: 0;
     display: flex;
     flex-direction: column;
-    > :not(:last-child) {
-      // border-bottom: 1px solid rgba(128, 128, 128, 0.12);
-    }
     .pagination-indicator {
       display: flex;
       flex-direction: column;
@@ -546,9 +520,6 @@ a {
         transition: all 0.2s linear;
         font-size: 13px;
         font-family: $mono-font-list;
-      }
-      .pagination-action-icon {
-        // margin-right: 4px;
       }
       * {
         transition: all 0.3s linear;
@@ -986,10 +957,6 @@ a {
     margin-top: 30px;
     margin-left: 0;
     margin-right: 0;
-    &,
-    * {
-      /*font-size: $single-column-toc-size;*/
-    }
     .toc-content{
       padding: 10px;
     }
@@ -1033,9 +1000,6 @@ a {
         transition: all 0.2s linear;
         font-size: 13px;
         font-family: $mono-font-list;
-      }
-      .pagination-action-icon {
-        // margin-right: 4px;
       }
       * {
         transition: all 0.3s linear;

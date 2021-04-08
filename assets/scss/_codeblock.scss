@@ -1,0 +1,40 @@
+// inline code
+code {
+    color: $dark-accent;
+    background: rgba($color-accent, 0.07) !important;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-family: $mono-font-list;
+}
+
+// code block
+pre {
+    //background: rgba(46,46,46, 1) !important;
+    //color: rgba(255,255,255, 1);
+    background: rgba($color-accent, 0.07);
+    padding: 12px 15px;
+    border-radius: 5px;
+    font-family: $mono-font-list;
+    position: relative;
+
+    * {
+      background: none !important;
+      font-family: $mono-font-list !important;
+    }
+    code {
+      padding: 0;
+      overflow: inherit;
+      display: block;
+    }
+    &::after{
+        color: #aaa;
+        content: attr(data-lang);
+        height: $post-body-size;
+        position: absolute;
+        right: 0;
+        top: 0;
+        text-align: right;
+        padding: 10px 5px;
+        font-weight: bolder;
+    }
+}

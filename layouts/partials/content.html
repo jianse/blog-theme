@@ -1,7 +1,11 @@
 {{$content := .Content }}
 {{ if .Site.Params.enableBlockquoteEnhance }}
 {{/*  blockquote enhance  */}}
-{{ $content = replaceRE "<blockquote>\\s<p>\\[(\\w+)]" "<blockquote class=\"$1\">" $content }}
+{{ $content = replaceRE `<blockquote>\s<p>\[(\w+)]` `<blockquote class="$1">` $content }}
 {{ end }}
+
+{{ if .Site.Params.enableCodeLangTag }}
+{{ $content = replaceRE `<pre (.+?><code class="(\w+-(\w+))")` `<pre class="$2" data-lang="$3" $1` $content}}
+{{end}}
 
 {{- $content | safeHTML -}}
