@@ -1,0 +1,58 @@
+
+.a-block {
+  display: block;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.no-margin {
+  margin: 0;
+}
+
+.no-padding {
+  padding: 0;
+}
+
+.no-overflow {
+  overflow: hidden !important;
+}
+
+.animated-visibility {
+  transition: visibility 0s, opacity 0.5s linear;
+  visibility: visible;
+  opacity: 1;
+}
+
+.invisible {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.year {
+  color: $dark-accent;
+}
+
+.mjx-container {
+  overflow-y: hidden;
+}
+
+.vwrap * {
+  color: black;
+}
+
+.vcontent p {
+  color: black;
+}

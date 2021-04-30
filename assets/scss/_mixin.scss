@@ -1,0 +1,27 @@
+@import "themes";
+
+@mixin themeify {
+    @each $theme-name, $theme-map in $themes {
+        $theme-map: $theme-map !global;
+
+        [data-theme="#{$theme-name}"] & {
+            @content;
+        }
+    }   
+}
+
+@function themed($key) {
+    @return map-get($map: $theme-map, $key: $key);
+}
+
+@mixin font-color($color) {
+    @include themeify {
+        color: themed($color);
+    }
+}
+
+@mixin background($color) {
+    @include themeify {
+        background: themed($color);
+    }
+}

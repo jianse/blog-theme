@@ -1,0 +1,81 @@
+.single-column-drawer-container {
+  display: none;
+  @media screen and (max-width: $single-column-max-width) {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: -$single-column-drawer-width;
+    width: $single-column-drawer-width;
+    height: 100vh;
+    z-index: 1800;
+    transition: all 0.3s ease-in-out;
+    .drawer-content {
+      @include background("color-drawer-bg");
+      height: 100%;
+      width: 100%;
+      padding: 50px 0 80px 0;
+      display: flex;
+
+      .drawer-menu {
+        flex-grow: 1;
+        display: flex;
+        justify-items: center;
+        justify-content: center;
+        flex-direction: column;
+        $drawer-menu-item-active-background-alpha: 0.1;
+        $drawer-menu-item-active-color-darken: 30%;
+
+        .drawer-menu-item {
+          font-size: $single-column-nav-link-size;
+          margin-bottom: 10px;
+          border-right: 2px solid transparent;
+          padding: 8px 30px 8px 30px;
+          cursor: pointer;
+          transition: all 0.2s linear;
+          @include font-color("color-text");
+
+          .nav-link-subitem {
+            font-size: $single-column-nav-link-size;
+            padding: 2px;
+
+            li {
+              list-style: none;
+              padding-left: 8px;
+            }
+
+            a {
+              text-decoration: none;
+              color: $deep-dark-accent;
+            }
+          }
+
+          &.active {
+            border-right: 2px solid $color-accent;
+            background: rgba($color-accent, $drawer-menu-item-active-background-alpha);
+            @include font-color("color-text");
+          }
+        }
+      }
+    }
+  }
+}
+
+.single-column-drawer-mask {
+  display: none !important;
+  @media screen and (max-width: $single-column-max-width) {
+    display: block !important;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1600;
+    transition: all 0.3s ease-in-out;
+  }
+}
+
+.single-column-drawer-container-active {
+  left: 0;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+}

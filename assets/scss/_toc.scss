@@ -1,0 +1,39 @@
+.toc {
+  float: right;
+  border-radius: 5px;
+  margin-left: 30px;
+  margin-right: 60px;
+  margin-top: 30px;
+  max-width: 260px;
+  max-height: 80vh;
+  overflow: auto;
+  @include background("color-bg-toc");
+  a {
+    font-size: $toc-size;
+    @include font-color("color-text");
+  }
+  ul {
+    list-style: none;
+    padding: 0 0 0 20px;
+    margin: 0;
+    line-height: 1.7em;
+  }
+  .toc-content {
+    padding: 20px;
+  }
+
+  @media screen and (max-width: $single-column-max-width) {
+    line-height: 2em;
+    float: none;
+    margin-top: 30px;
+    margin-left: 0;
+    margin-right: 0;
+    .toc-content {
+      padding: 10px;
+    }
+  }
+}
+
+.toc a.toc-active{
+  @include font-color("color-toc-active");
+}

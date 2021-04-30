@@ -1,7 +1,9 @@
 {{ define "main" }}
 <div ref="streamContainer" class="stream-container">
     <div class="post-list-container post-list-container-shadow">
-        {{ range .Paginator.Pages.GroupByDate "2006" }}
+        {{ $paginator := .Paginate (where .Pages "Type" "ne" "ordinary") }}
+        {{ range $paginator.Pages.GroupByDate "2006" }}
+        {{/*  {{ range .Paginator.Pages.GroupByDate "2006" }}  */}}
             <a class="a-block">
                 <div class="post-item-wrapper post-item-wrapper-no-hover">
                     <div class="post-item post-item-no-gaps">
@@ -28,6 +30,7 @@
             </a>
             {{ end }}
         {{ end }}
+        {{ .Page.Scratch.Set "has_paginator" true }}
     </div>
 </div>
 

@@ -7,7 +7,7 @@ blockquote{
     p {
       margin-bottom: 0;
     }
-    * {
+    *:not(a) {
       color: $dark-accent;
     }
     
@@ -37,7 +37,7 @@ blockquote.warn {
     border-color: rgba($color-warn, 0.7);
     background: rgba($color-warn, 0.05);
     color: $dark-warn;
-    * {
+    *:not(a) {
         color: $dark-warn;
         
     }
@@ -51,7 +51,7 @@ blockquote.success{
     border-color: rgba($color-success, 0.7);
     background: rgba($color-success, 0.05);
     color: $dark-success;
-    *{
+    *:not(a){
         color: $dark-success;
     }
     &::before{
@@ -64,7 +64,7 @@ blockquote.error{
     border-color: rgba($color-error, 0.7);
     background: rgba($color-error, 0.05);
     color: $dark-error;
-    *{
+    *:not(a){
         color: $dark-error;
     }
     &::before{

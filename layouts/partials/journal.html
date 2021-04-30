@@ -52,6 +52,15 @@ app = new Vue({
                 this.isDrawerOpen = false;
                 document.getElementsByTagName('html')[0].style.overflow = this.isDrawerOpen ? 'hidden' : 'unset';
             },
+            switchTheme(themeName){
+                if(themeName=="light"){
+                    this.isDarkMode = false;
+                }else{
+                    this.isDarkMode = true;    
+                }
+                window.localStorage.setItem("theme",themeName);
+                window.document.documentElement.setAttribute("data-theme",themeName);
+            },
             toggleDarkMode() {
                 this.isDarkMode = !this.isDarkMode;
                 if (this.isDarkMode==true){
@@ -84,6 +93,13 @@ app = new Vue({
             })(navigator.userAgent || navigator.vendor || window.opera);
             return check;
         };
+        var theme = window.localStorage.getItem("theme");
+        if(theme){
+            window.document.documentElement.setAttribute("data-theme",theme);
+            if(theme=="dark"){
+                this.isDarkMode = true;
+            }
+        }
         // From https://www.jdeal.cn/archives/Dark.html
         var night = window.localStorage.getItem("night");
         if (night!="1"){

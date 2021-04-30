@@ -1,0 +1,5 @@
+.post-body {
+  table *{
+    @include font-color("color-text");
+  }
+}

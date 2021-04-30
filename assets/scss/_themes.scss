@@ -1,0 +1,100 @@
+$color-accent: #1976d2;
+$color-warn: #fa8c16;
+$color-error: #ff4d4f;
+$color-success: #52c41a;
+$back-container-background: #fcfcfc;
+$front-container-background: #ffffff;
+
+$default-font-list: "Lora", "Noto Serif SC", sans-serif;
+$mono-font-list: "Fira Mono", "Cousine", Monaco, Menlo, "Source Code Pro", monospace;
+$sans-preferred-font-list: "Montserrat", "Roboto", "Source Sans Pro", "Helvetica", $default-font-list;
+
+$side-container-width: 25%; //280px;
+$extra-container-width: 25%;
+$extra-container-pagination-width: 64px;
+$stream-container-max-width: 1620px;
+
+$nav-title-size: 30px;
+$nav-subtitle-size: 18px;
+$nav-link-size: 20px;
+$nav-footer-size: 12px;
+$post-title-size: 30px;
+$post-subtitle-size: 14px;
+$post-summary-size: 16px;
+$post-body-size: 16px;
+$post-meta-size: 16px;
+$tag-category-title-size: 22px;
+$toc-size: 16px;
+
+$dark-accent: darken($color-accent, 10%);
+$dark-warn: darken($color-warn, 10%);
+$dark-error: darken($color-error, 10%);
+$dark-success: darken($color-success, 10%);
+$deep-dark-accent: darken($color-accent, 50%);
+$color-text: $deep-dark-accent;
+
+@if lightness($color-accent) <20% {
+  $dark-accent: $color-accent;
+  $deep-dark-accent: $color-accent;
+  $color-text: $deep-dark-accent;
+}
+
+$single-column-max-width: 1020px;
+$single-column-drawer-width: 260px;
+$single-column-nav-title-size: 28px;
+$single-column-nav-subtitle-size: 20px;
+$single-column-nav-link-size: 18px;
+$single-column-nav-footer-size: 13px;
+$single-column-post-title-size: 22px;
+$single-column-post-summary-size: 16px;
+$single-column-post-body-size: 16px;
+$single-column-post-meta-size: 14px;
+$single-column-tag-category-title-size: 14px;
+$single-column-toc-size: 14px;
+
+$light-accent: lighten($color-accent, 10%);
+$deep-light-accent: lighten($color-accent, 30%);
+$dark-mode-text: darken(#fff, 10%);
+
+$dark-mode-back-container-background: #212121;
+$dark-mode-front-container-background: #282828;
+
+$h1: 30px;
+$h-diff: 3px;
+
+$themes: (
+  light: (
+    color-accent: #1976d2,
+    color-warn: #fa8c16,
+    color-error: #ff4d4f,
+    color-success: #52c41a,
+    color-text: $color-text,
+    color-bg-toc: rgba($color-accent, 0.05),
+    color-toc-active: darken($color-accent, 10%),
+    color-header: $deep-dark-accent,
+    color-nav-bg: white,
+    color-pagination: black,
+    color-drawer-bg: white,
+    color-stream-container-bg: rgb(255, 255, 255),
+    color-post-item-hover-bg: rgba(0, 0, 0, .03),
+    back-container-background: #fcfcfc,
+    font-color-primary: #414141,
+  ),
+  dark: (
+    color-accent: #1976d2,
+    color-warn: #fa8c16,
+    color-error: #ff4d4f,
+    color-success: #52c41a,
+    color-text: darken(#fff, 10%),
+    color-bg-toc: lighten($dark-mode-front-container-background, 10%),
+    color-toc-active: $light-accent,
+    color-header: $dark-mode-text,
+    color-nav-bg: $dark-mode-front-container-background,
+    color-pagination: $dark-mode-text,
+    color-drawer-bg: $dark-mode-front-container-background,
+    color-stream-container-bg: rgba(255, 255, 255, 0.05),
+    color-post-item-hover-bg: rgba(255, 255, 255, .03),
+    back-container-background: #212121,
+    font-color-primary: #f5f5f5,
+  ),
+);

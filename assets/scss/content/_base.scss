@@ -1,0 +1,13 @@
+.post {
+  dl, ol, ul {
+    margin: 1rem 0;
+  }
+
+  a {
+    color: $color-accent;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

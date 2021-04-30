@@ -49,7 +49,7 @@
             {{.Site.Title}}
         </a>
         {{ if not .Site.Params.disableDarkMode }}
-        <button type="button" class="nav-darkmode-toggle" v-on:click="toggleDarkMode">
+        <button type="button" class="nav-darkmode-toggle" v-on:click="switchTheme(isDarkMode?'light':'dark')">
             <i class="material-icons" v-if="isDarkMode">
                 brightness_4
             </i>

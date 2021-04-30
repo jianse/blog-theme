@@ -10,7 +10,8 @@
                 </div>
             </div>
         </div>
-        {{- range .Paginator.Pages -}}
+        {{ $paginator := .Paginate (where .Pages "Type" "ne" "ordinary") }}
+        {{ range $paginator.Pages }}
         <a href="{{ .RelPermalink }}" class="a-block">
             <div class="post-item-wrapper">
                 <div class="post-item post-item-no-gaps">
@@ -24,6 +25,7 @@
             </div>
         </a>
         {{- end -}}
+        {{ .Page.Scratch.Set "has_paginator" true }}
     </div>
 </div>
 {{ end }}

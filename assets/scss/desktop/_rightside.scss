@@ -1,0 +1,14 @@
+.extra-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: $extra-container-width;
+  font-family: $sans-preferred-font-list;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+
+  @media screen and (max-width: $single-column-max-width) {
+    display: none;
+  }
+}

@@ -1,0 +1,32 @@
+$tagcolors : #dc3545 #fd7e14 #ffc107 #28a745 #17a2b8 #007bff #6610f2;
+
+.tagcloud {
+    padding: 15px;
+    font-size: 1.25rem;
+    a.tagcloud-item{
+        display: inline-block;
+        margin: 0 3px;
+        padding: 0 5px;
+        text-decoration: none;
+        // color: rgba($color: $dark-error, $alpha: 0.75);
+        transition: all .35s ease-out;
+        sup {
+            color: inherit;
+            padding-left: 1px;
+        }
+        &:hover{
+            border-radius: 3px;
+            color: white;
+        }
+    }
+}
+$tagcolorcount : length($list: $tagcolors);
+@for $i from 1 through $tagcolorcount {
+    .tagcloud-item:nth-child(#{$tagcolorcount}n+#{$i}){
+    color: nth($tagcolors,$i);
+    &:hover{
+        background-color: nth($list: $tagcolors, $n: $i);
+    }
+    }
+};
+

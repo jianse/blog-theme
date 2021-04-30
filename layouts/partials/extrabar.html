@@ -15,7 +15,7 @@
             </i>
         </a>
         {{ if not .Site.Params.disableDarkMode }}
-        <a class="pagination-action" v-on:click="toggleDarkMode">
+        <a class="pagination-action" v-on:click="switchTheme(isDarkMode?'light':'dark')">
             <i class="material-icons pagination-action-icon" v-if="isDarkMode">
                 brightness_4
             </i>
@@ -24,7 +24,8 @@
             </i>
         </a>
         {{ end }}
-        {{ if .Paginator }}
+        {{ $hasPaginator := .Page.Scratch.Get "has_paginator" }}
+        {{ if and ( ne .Paginator nil) $hasPaginator }}
         {{ if gt .Paginator.TotalPages 1 }}
             <div class="pagination-indicator">
                 <span style="text-align: center">

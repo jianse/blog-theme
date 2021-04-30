@@ -1,0 +1,17 @@
+#single-column-footer {
+  display: none;
+
+  @media screen and (max-width: $single-column-max-width) {
+    display: block;
+    text-align: center;
+    font-size: $single-column-nav-footer-size;
+    font-family: $sans-preferred-font-list;
+    padding: 40px 20px 40px 20px;
+  }
+  a {
+    color: $color-accent;
+    &:hover{
+      text-decoration: underline;
+    }
+  }
+}

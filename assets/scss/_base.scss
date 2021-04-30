@@ -1,0 +1,18 @@
+::selection {
+  background: rgba($color: $color-accent, $alpha: 0.4);
+}
+
+a, a:hover {
+  text-decoration: none;
+  @include font-color("color-text");
+}
+
+body {
+  @include background("back-container-background");
+  padding: 0;
+  margin: 0;
+  font-family: $default-font-list;
+  text-shadow: 1px 1px 1px rgba($color: #000000, $alpha: 0.004);
+  text-rendering: optimizeLegibility;
+  @include font-color("color-text");
+}

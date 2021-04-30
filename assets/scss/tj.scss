@@ -1,0 +1,32 @@
+@import "mixin";
+@import "base";
+@import "content/base";
+@import "content/blockquote";
+@import "content/codeblock";
+@import "content/table";
+@import "tagcloud";
+@import "toc";
+@import "pagination";
+@import "utils";
+@import "mobile/navbar";
+@import "mobile/header";
+@import "mobile/drawer";
+@import "mobile/footer";
+@import "desktop/leftside";
+@import "desktop/rightside";
+@import "stream_container";
+
+.pagination-bar-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: $side-container-width;
+  text-align: right;
+  font-family: $sans-preferred-font-list;
+  padding: 20px 0;
+  overflow: scroll;
+  display: flex;
+  flex-direction: column;
+}
+

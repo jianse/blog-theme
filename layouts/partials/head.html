@@ -39,7 +39,14 @@
 <script src="{{"/vendor/js/bootstrap.min.js" | relURL}}" ></script>
 <script src="{{"/vendor/js/smooth-scroll.polyfills.min.js" | relURL}}" ></script>
 <link type="text/css" rel="stylesheet" href="{{"/vendor/css/bootstrap.min.css" | relURL}}">
-<script src="{{"/vendor/js/vue.min.js" | relURL}}" ></script>
+
+{{ if .Site.Params.debug }}
+  <script src="{{"/vendor/js/vue.js" | relURL}}" ></script>
+{{ else }}
+  <script src="{{"/vendor/js/vue.min.js" | relURL}}" ></script>
+{{ end }}
+
+
 
 {{if .Site.Params.enableMediumZoom }}
 <script src="{{ "/vendor/js/medium-zoom.min.js" | relURL}}"></script>
@@ -56,15 +63,11 @@
 
 {{- partial "favicon.html" . -}}
 
-{{ $styles := resources.Get "scss/journal.scss" | toCSS | minify | fingerprint }}
+{{ $styles := resources.Get "scss/tj.scss" | toCSS | minify | fingerprint }}
 <link rel="stylesheet" href="{{ $styles.Permalink }}" integrity="{{ $styles.Data.Integrity }}" media="screen">
 
-{{ if not .Site.Params.disableDarkmode }}
-{{ $darkmode := resources.Get "scss/dark-mode.scss" | toCSS | minify | fingerprint }}
-<link rel="stylesheet" href="{{ $darkmode.Permalink }}" integrity="{{ $darkmode.Data.Integrity }}" media="screen">
-{{ end }}
 
-<script src="{{.Site.BaseURL}}/js/loadCSS.js"></script>
+<script src="{{"/js/loadCSS.js"|relURL}}"></script>
 <script>
   loadCSS("https://fonts.googleapis.com/css?family=Lora|Montserrat|Fira+Mono|Noto+Serif+SC|Material+Icons");
 </script>
