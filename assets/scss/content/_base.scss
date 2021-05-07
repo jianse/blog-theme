@@ -1,5 +1,7 @@
 .post {
-  dl, ol, ul {
+  dl,
+  ol,
+  ul {
     margin: 1rem 0;
   }
 
@@ -10,4 +12,27 @@
       text-decoration: underline;
     }
   }
+}
+
+.post-body a::before {
+  content: "link";
+  font-family: "Material Icons";
+  font-weight: normal;
+  font-style: normal;
+  font-size: inherit;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  vertical-align: middle;
+  transform: scale(1.33) rotate(90deg);
+  transition: all 0.3s ease;
+}
+
+.post-body a:hover::before {
+  transform: scale(1.33) rotate(127deg);
 }
