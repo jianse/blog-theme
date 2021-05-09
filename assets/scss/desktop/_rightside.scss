@@ -11,4 +11,7 @@
   @media screen and (max-width: $single-column-max-width) {
     display: none;
   }
+  .container-toc-extrabar{
+    float:right;
+  }
 }

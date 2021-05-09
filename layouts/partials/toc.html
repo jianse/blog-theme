@@ -1,3 +1,5 @@
+<div class="toc">
+
 {{ $headers := findRE "<h[1-4].*?>(.|\n])+?</h[1-4]>" .Content }}
 <!-- at least one header to link to -->
 {{ if ge (len $headers) 1 }}
@@ -28,7 +30,7 @@
 						{{ end }}
 						{{ $anchorId :=  (replaceRE ".* id=\"(.*?)\".*" "$1" $header ) }}
 							<li>
-								<a href="#{{ $anchorId }}" onclick="onNavClick(`#{{ $anchorId | safeJS}}-nav`)" id="{{ $anchorId }}-nav">
+								<a href="#{{ $anchorId |safeHTML }}" id="{{ $anchorId | safeHTML }}-nav">
 									{{ $header | plainify | htmlUnescape }}
 								</a>
 							</li>
@@ -37,6 +39,12 @@
 					{{ end }}
 				{{ end }}
 			{{ end }}
+			{{ $prev_heading := $scratch.Get "prev_heading"}}
+			{{ range seq $prev_heading 2}}
+			</ul></li>
+			{{end}}
 		</ul>
 	</div>
 {{ end }}
+
+</div>
