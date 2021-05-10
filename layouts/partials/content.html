@@ -12,4 +12,6 @@
 {{ $content = replaceRE `<a` `<a target="_blank"` $content }}
 {{ end}}
 
+{{ $content = replaceRE `<table` `<table class="table table-striped table-hover table-bordered" ` $content }}
+
 {{- $content | safeHTML -}}
