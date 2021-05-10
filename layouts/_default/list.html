@@ -14,7 +14,7 @@
         </a>
         {{ $paginator := .Paginate (where .Pages "Type" "ne" "ordinary") }}
         {{ range $paginator.Pages }}
-                <a href="{{.Permalink}}" class="a-block">
+                <a href="{{.RelPermalink}}" class="a-block">
                     <div class="post-item-wrapper">
                         <div class="post-item post-item-no-gaps">
                             <div class="post-item-info-wrapper"> 

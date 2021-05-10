@@ -63,7 +63,7 @@
 {{- partial "favicon.html" . -}}
 
 {{ $styles := resources.Get "scss/tj.scss" | toCSS | minify | fingerprint }}
-<link rel="stylesheet" href="{{ $styles.Permalink }}" integrity="{{ $styles.Data.Integrity }}" media="screen">
+<link rel="stylesheet" href="{{ $styles.RelPermalink }}" integrity="{{ $styles.Data.Integrity }}" media="screen">
 
 <script src="{{ "/js/loadCSS.js" | relURL }}"></script>
 <script>
