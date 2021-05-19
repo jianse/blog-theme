@@ -1,7 +1,7 @@
 {{$content := .Content }}
 {{ if .Site.Params.enableBlockquoteEnhance }}
 {{/*  blockquote enhance  */}}
-{{ $content = replaceRE `<blockquote>\s<p>\[(\w+)]` `<blockquote class="$1">` $content }}
+{{ $content = replaceRE `<blockquote>\s<p>\[(\w+)]` `<blockquote class="$1"><p>` $content }}
 {{ end }}
 
 {{ if .Site.Params.enableCodeLangTag }}
@@ -9,7 +9,7 @@
 {{end}}
 
 {{ if .Site.Params.openLinkInNewTab }}
-{{ $content = replaceRE `<a` `<a target="_blank"` $content }}
+{{ $content = replaceRE `<a( href="[^#])` `<a target="_blank" rel="noopener"$1` $content }}
 {{ end}}
 
 {{ $content = replaceRE `<table` `<div class="table-responsive"><table class="table table-striped table-hover table-bordered" ` $content }}

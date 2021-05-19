@@ -4,8 +4,11 @@
     <div class="gcse-searchbox-only" mobileLayout="true"></div>
     {{ end }}
     {{ if and (not (.Site.Params.disableToC) ) (.IsPage) }}
-    <div ref="containerTocExtrabar" class="container-toc-extrabar" :class="{ invisible: scrollY <= 140 }">
-        {{- partial "toc.html" . -}}
+    <div ref="containerTocExtrabar" class="container-toc-extrabar" :class="{ invisible: scrollY <= 100 }">
+        <blog-toc v-if="!isMobile&&hasToc" 
+                  :toc-list="tocData" 
+                  :active-anchor="activeAnchor">
+        </blog-toc>
     </div>
     {{ end }}
     <div class="pagination">

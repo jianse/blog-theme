@@ -40,16 +40,10 @@
 <link type="text/css" rel="stylesheet" href="{{"/vendor/css/bootstrap.min.css" | relURL}}">
 
 {{ if .Site.Params.debug }}
-  <script src="{{"/vendor/js/vue.js" | relURL}}" ></script>
+  <script src="{{"/vendor/js/vue.global.js" | relURL}}" ></script>
 {{ else }}
-  <script src="{{"/vendor/js/vue.min.js" | relURL}}" ></script>
+  <script src="{{"/vendor/js/vue.global.prod.js" | relURL}}" ></script>
 {{ end }}
-
-
-
-{{if .Site.Params.enableMediumZoom }}
-<script src="{{ "/vendor/js/medium-zoom.min.js" | relURL}}"></script>
-{{end}}
 
 {{if .Site.Params.manifest}}
 <link rel="manifest" href="{{.Site.Params.manifest}}">

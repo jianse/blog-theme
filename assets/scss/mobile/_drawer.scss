@@ -80,3 +80,7 @@
   left: 0;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
 }
+
+.container-toc-mobile{
+  @include background("color-bg-toc");
+}

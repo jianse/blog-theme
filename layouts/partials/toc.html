@@ -1,50 +1,23 @@
-<div class="toc">
+{{if .TableOfContents }}
+{{ $toc := .TableOfContents }}
 
-{{ $headers := findRE "<h[1-4].*?>(.|\n])+?</h[1-4]>" .Content }}
-<!-- at least one header to link to -->
-{{ if ge (len $headers) 1 }}
-	<div class="toc-content">
-	<!-- ignore empty links with + -->
-		{{ $h1_n := len (findRE "(.|\n])+?" .Content) }}
-		{{ $re := (cond (eq $h1_n 0) "<h[2-4]" "<h[1-4]") }}
-		{{ $renum := (cond (eq $h1_n 0) "[2-4]" "[1-4]") }}
-		<center>- {{ i18n "toc_title" }} -</center>
-		{{ $scratch := newScratch }}
-		{{ $scratch.Set "prev_heading" 1 }}
-		<ul>
-			{{ range $headers }}
-				{{ $header := . }}
-				{{ range first 1 (findRE $re $header 1) }}
-					{{ range findRE $renum . 1 }}
-						{{ $next_heading := (cond (eq $h1_n 0) (sub (int .) 1 ) (int . ) ) }}
-						{{ $prev_heading := $scratch.Get "prev_heading"}}
-						{{ if lt $next_heading $prev_heading }}
-							{{ range seq (sub $prev_heading $next_heading) }}
-								</ul></li>
-							{{ end }}
-						{{ end }}
-						{{ if gt $next_heading $prev_heading }}
-							{{ range seq (sub $next_heading $prev_heading) }}
-								<li><ul class="collapse" data-toggle="collapse">
-							{{ end }}
-						{{ end }}
-						{{ $anchorId :=  (replaceRE ".* id=\"(.*?)\".*" "$1" $header ) }}
-							<li>
-								<a href="#{{ $anchorId |safeHTML }}" id="{{ $anchorId | safeHTML }}-nav">
-									{{ $header | plainify | htmlUnescape }}
-								</a>
-							</li>
-						
-						{{ $scratch.Set "prev_heading" $next_heading }}
-					{{ end }}
-				{{ end }}
-			{{ end }}
-			{{ $prev_heading := $scratch.Get "prev_heading"}}
-			{{ range seq $prev_heading 2}}
-			</ul></li>
-			{{end}}
-		</ul>
-	</div>
-{{ end }}
+{{/*  remove write char  */}}
+{{ $toc = replaceRE `\n` ` ` $toc}}
+{{ $toc = replaceRE `\s{2,}` ` ` $toc}}
+{{ $toc = replaceRE `>\s<` `><` $toc}}
 
-</div>
+{{ $toc = replaceRE `<nav.*?><ul>(.*?)</ul></nav>` `{"show":true,"items":[$1]}` $toc }}
+{{ $toc = replaceRE `<ul>` `"children":{"show":true,"items":[` $toc}}
+{{ $toc = replaceRE `</ul>` `]},` $toc }}
+{{ $toc = replaceRE `<li><a href="([^<]*?)">([^<]*?)</a>` `{"anchor":"$1","label":"$2",` $toc }} 
+{{ $toc = replaceRE `</li>` `},` $toc}}
+
+{{/*  remove tralling comma  */}}
+{{ $toc = replaceRE `,}` `}` $toc }}
+{{ $toc = replaceRE `,]` `]` $toc}}
+
+<script>
+var tocJson = '{{- $toc|safeJS -}}'
+var tocObj = JSON.parse(tocJson)
+</script>
+{{end}}

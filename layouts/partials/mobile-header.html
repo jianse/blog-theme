@@ -28,6 +28,10 @@
             {{ end }}
             {{ if and (not (.Site.Params.disableToC) ) (.IsPage) }}
             <div ref="containerTocMobile" class="container-toc-mobile">
+                <blog-toc v-if="isMobile&&hasToc" 
+                  :toc-list="tocData" 
+                  :active-anchor="activeAnchor">
+        </blog-toc>
             </div>
             {{ end }}
         </div>
