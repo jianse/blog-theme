@@ -17,7 +17,7 @@
 {{ $toc = replaceRE `,]` `]` $toc}}
 
 <script>
-var tocJson = '{{- $toc|safeJS -}}'
-var tocObj = JSON.parse(tocJson)
+var tocJson = '{{- $toc|safeJS -}}';
+var tocObj = JSON.parse(tocJson);
 </script>
 {{end}}

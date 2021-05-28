@@ -4,3 +4,7 @@
 {{else}}
 <script src="{{ "/js/journal.iife.min.js" | relURL }}"></script>
 {{end}}
+
+{{ if .Site.Params.enableServiceWorker }}
+{{ partial "service-worker.html" . }}
+{{ end }}
