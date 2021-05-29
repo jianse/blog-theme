@@ -15,11 +15,10 @@
     </a>
 
     <div class="nav-link-list">
-        {{ $current := .RelPermalink | absLangURL }}
+        {{ $current := string .RelPermalink  }}
         {{ range .Site.Menus.main }}
             {{$actived := "false"}}
-            <!-- A problem caused by slash: if you use "eq" directly, you will get a result of "/tags/" and "/tags" -->
-            {{if hasPrefix  $current (.URL|absLangURL)}}
+            {{if eq  $current (.URL)}}
                 {{$actived = "active"}}
             {{end}}
             {{ if .HasChildren }}
@@ -29,7 +28,7 @@
                 {{ end }}
             </parent>
             {{ else }}
-            <!--<a class="a-block nav-link-item {{$actived}}" href="{{ .URL }}">-->
+            
             <a class="a-block nav-link-item {{ $actived }}" href="{{ .URL }}">
                 {{ .Name }}
             </a>
