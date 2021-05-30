@@ -40,9 +40,9 @@
 <link type="text/css" rel="stylesheet" href="{{"/vendor/css/bootstrap.min.css" | relURL}}">
 
 {{ if .Site.Params.debug }}
-  <script src="{{"/vendor/js/vue.global.js" | relURL}}" ></script>
+  <script src="{{"/vendor/js/vue.global.js" | relURL}}" defer="defer"></script>
 {{ else }}
-  <script src="{{"/vendor/js/vue.global.prod.js" | relURL}}" ></script>
+  <script src="{{"/vendor/js/vue.global.prod.js" | relURL}}" defer="defer"></script>
 {{ end }}
 
 {{if .Site.Params.manifest}}
@@ -58,11 +58,10 @@
 
 {{ $styles := resources.Get "scss/tj.scss" | toCSS | minify | fingerprint }}
 <link rel="stylesheet" href="{{ $styles.RelPermalink }}" integrity="{{ $styles.Data.Integrity }}" media="screen">
+{{/*  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora|Montserrat|Fira+Mono|Noto+Serif+SC|Material+Icons&display=swap">  */}}
+<script src="{{ "/js/loadCSS.js" | relURL }}" defer="defer"></script>
+<script src="{{ "/js/web-font.js" | relURL }}" defer="defer"></script>
 
-<script src="{{ "/js/loadCSS.js" | relURL }}"></script>
-<script>
-  loadCSS("https://fonts.googleapis.com/css?family=Lora|Montserrat|Fira+Mono|Noto+Serif+SC|Material+Icons&display=swap");
-</script>
 
 {{ if .Params.enableMathJax }}
   {{ partial "mathjax.html" . }}

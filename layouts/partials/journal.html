@@ -1,8 +1,8 @@
 {{- partial "toc.html" . -}}
 {{if .Site.Params.debug}}
-<script src="{{ "/js/journal.iife.js" | relURL }}"></script>
+<script src="{{ "/js/journal.iife.js" | relURL }}" defer="defer"></script>
 {{else}}
-<script src="{{ "/js/journal.iife.min.js" | relURL }}"></script>
+<script src="{{ "/js/journal.iife.min.js" | relURL }}" defer="defer" ></script>
 {{end}}
 
 {{ if .Site.Params.enableServiceWorker }}

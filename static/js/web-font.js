@@ -1,0 +1,1 @@
+loadCSS("https://fonts.googleapis.com/css?family=Lora|Montserrat|Fira+Mono|Noto+Serif+SC|Material+Icons&display=swap");
