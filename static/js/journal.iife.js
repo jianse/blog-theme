@@ -1626,6 +1626,20 @@
         });
         this.isMobile = e.matches;
       },
+      initServiceWorker(){
+        const wb =  new v(sw_path);
+        wb.addEventListener('message',(event)=>{
+          if(event.data.type === 'CACHE_UPDATED'){
+            this.$notify({
+              message:'new version found, click to update',
+              onClick:()=>{
+                window.navigator.reload();
+              }
+            });
+          }
+        });
+        wb.register();
+      },
       handleResize() {
         const {extraContainer, streamContainer} = this.$refs;
         extraContainer.style.left = (streamContainer.offsetWidth - extraContainer.offsetWidth) + 'px';
@@ -1655,7 +1669,6 @@
             this.zoom = mediumZoom('.post-body img', {});
           }, 1000);
         }
-
       }
     },
     created() {
@@ -1682,33 +1695,15 @@
         this.initToc();
       }
 
+      let sw_path = window.sw_path || undefined;
+      if(sw_path){
+        this.initServiceWorker();
+      }
+
       this.updateZoom();
       this.handleScroll();
       this.handleResize();
       this.mounted = true;
-      let sw_path = window.sw_path || undefined;
-      if(sw_path){
-        const wb =  new v(sw_path);
-        this.wb = wb;
-        wb.addEventListener('message',(event)=>{
-          if(event.data.type === 'CACHE_UPDATED'){
-            this.$notify({
-              message:'new version found, click to update',
-              onClick:()=>{
-                window.navigator.reload();
-              }
-            });
-          }
-        });
-        wb.register();
-      }
-
-      navigator.serviceWorker.addEventListener('message', async (event) => {
-        if (event.data.meta === 'workbox-broadcast-update') {
-          // ElNotification()
-          window.location.reload();
-        }
-      });
 
       if (document.body.dataset.enableValine === "true") {
         new Valine({
