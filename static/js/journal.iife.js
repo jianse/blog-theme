@@ -1677,6 +1677,7 @@
       }
     },
     mounted() {
+      let tocObj = window.tocObj || undefined;
       if (tocObj) {
         this.initToc();
       }
@@ -1685,6 +1686,7 @@
       this.handleScroll();
       this.handleResize();
       this.mounted = true;
+      let sw_path = window.sw_path || undefined;
       if(sw_path){
         const wb =  new v(sw_path);
         this.wb = wb;
