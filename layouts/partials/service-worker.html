@@ -1,1 +1,12 @@
-{{/*  to enable service-worker see config for more info  */}}
+{{$path:=""}}
+{{ if .Site.Params.debug }}
+{{ $path = `service-worker.js` }}
+{{else}}
+{{ $path = `service-worker.min.js` }}
+{{ end }}
+
+
+<script>
+  var sw_path = {{- $path | relURL -}};
+  
+</script>

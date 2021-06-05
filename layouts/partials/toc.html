@@ -6,10 +6,17 @@
 {{ $toc = replaceRE `\s{2,}` ` ` $toc}}
 {{ $toc = replaceRE `>\s<` `><` $toc}}
 
+{{/* remove nav element */}}
 {{ $toc = replaceRE `<nav.*?><ul>(.*?)</ul></nav>` `{"show":true,"items":[$1]}` $toc }}
+
+{{/* convert ul */}}
 {{ $toc = replaceRE `<ul>` `"children":{"show":true,"items":[` $toc}}
 {{ $toc = replaceRE `</ul>` `]},` $toc }}
-{{ $toc = replaceRE `<li><a href="([^<]*?)">([^<]*?)</a>` `{"anchor":"$1","label":"$2",` $toc }} 
+
+{{/* convert li */}}
+{{ $toc = replaceRE `<li>` `{` $toc}}
+{{/* convert a */}}
+{{ $toc = replaceRE `<a href="([^<]*?)">([^<]*?)</a>` `"anchor":"$1","label":"$2",` $toc }} 
 {{ $toc = replaceRE `</li>` `},` $toc}}
 
 {{/*  remove tralling comma  */}}
