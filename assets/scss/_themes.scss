@@ -62,7 +62,9 @@ $dark-mode-front-container-background: #282828;
 $h1: 30px;
 $h-diff: 3px;
 
-$themes: (
+$color-notification: #ffffff;
+
+$theme-light: (
   light: (
     color-accent: #1976d2,
     color-warn: #fa8c16,
@@ -76,10 +78,18 @@ $themes: (
     color-pagination: black,
     color-drawer-bg: white,
     color-stream-container-bg: rgb(255, 255, 255),
-    color-post-item-hover-bg: rgba(0, 0, 0, .03),
+    color-post-item-hover-bg: rgba(0, 0, 0, 0.03),
     back-container-background: #fcfcfc,
     font-color-primary: #414141,
+    // notification
+    color-notification-bg: rgba(128, 128, 128, 0.85),
+    color-notification-title: lighten($color-notification,20%),
+    color-notification-content: $color-notification,
+    color-notification-closeBtn: darken($color-notification,20%),
   ),
+);
+$color-notification: #606266;
+$theme-dark: (
   dark: (
     color-accent: #1976d2,
     color-warn: #fa8c16,
@@ -93,8 +103,18 @@ $themes: (
     color-pagination: $dark-mode-text,
     color-drawer-bg: $dark-mode-front-container-background,
     color-stream-container-bg: rgba(255, 255, 255, 0.05),
-    color-post-item-hover-bg: rgba(255, 255, 255, .03),
+    color-post-item-hover-bg: rgba(255, 255, 255, 0.03),
     back-container-background: #212121,
-    font-color-primary: #f5f5f5,
+    font-color-primary: #cecece,
+    // notification
+    color-notification-bg: rgba(255, 255, 255, 0.85),
+    color-notification-title: darken($color-notification,20%),
+    color-notification-content: $color-notification,
+    color-notification-closeBtn: lighten($color-notification,20%),
   ),
+);
+
+$themes: map-merge(
+  $map1: $theme-light,
+  $map2: $theme-dark,
 );

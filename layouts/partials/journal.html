@@ -1,10 +1,11 @@
 {{- partial "toc.html" . -}}
+
+{{ if .Site.Params.enableServiceWorker }}
+{{ partial "service-worker.html" . }}
+{{ end }}
+
 {{if .Site.Params.debug}}
 <script src="{{ "/js/journal.iife.js" | relURL }}" defer="defer"></script>
 {{else}}
 <script src="{{ "/js/journal.iife.min.js" | relURL }}" defer="defer" ></script>
 {{end}}
-
-{{ if .Site.Params.enableServiceWorker }}
-{{ partial "service-worker.html" . }}
-{{ end }}

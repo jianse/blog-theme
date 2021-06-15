@@ -20,6 +20,12 @@
     }
 }
 
+@mixin color($color) {
+    @include themeify{
+        color: themed($color);
+    }
+}
+
 @mixin background($color) {
     @include themeify {
         background: themed($color);

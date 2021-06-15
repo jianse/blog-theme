@@ -1631,7 +1631,9 @@
         wb.addEventListener('message',(event)=>{
           if(event.data.type === 'CACHE_UPDATED'){
             this.$notify({
-              message:'new version found, click to update',
+              title:'发现新版本',
+              message:'发现新版本，点击更新',
+              duration:0,
               onClick:()=>{
                 window.navigator.reload();
               }

@@ -82,7 +82,7 @@
                 {{ if .Params.enableVue }}
                 <div class="post-body">
                 {{ else }}
-                <div class="post-body" v-pre>
+                <div class="post-body">
                 {{ end }}
                     {{- partial "content.html" . -}}
                     {{ if not .Lastmod.IsZero }}
