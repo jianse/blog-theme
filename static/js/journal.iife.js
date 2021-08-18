@@ -1635,7 +1635,7 @@
               message:'发现新版本，点击更新',
               duration:0,
               onClick:()=>{
-                window.navigator.reload();
+                location.reload();
               }
             });
           }
