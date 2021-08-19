@@ -3,7 +3,7 @@
 
     // @ts-ignore
     try {
-        self['workbox:core:6.1.5'] && _();
+        self['workbox:core:6.2.4'] && _();
     }
     catch (e) { }
 
@@ -34,22 +34,24 @@
             if (!expectedType || !paramName || !moduleName || !funcName) {
                 throw new Error(`Unexpected input to 'incorrect-type' error.`);
             }
+            const classNameStr = className ? `${className}.` : '';
             return `The parameter '${paramName}' passed into ` +
-                `'${moduleName}.${className ? (className + '.') : ''}` +
+                `'${moduleName}.${classNameStr}` +
                 `${funcName}()' must be of type ${expectedType}.`;
         },
-        'incorrect-class': ({ expectedClass, paramName, moduleName, className, funcName, isReturnValueProblem }) => {
-            if (!expectedClass || !moduleName || !funcName) {
+        'incorrect-class': ({ expectedClassName, paramName, moduleName, className, funcName, isReturnValueProblem }) => {
+            if (!expectedClassName || !moduleName || !funcName) {
                 throw new Error(`Unexpected input to 'incorrect-class' error.`);
             }
+            const classNameStr = className ? `${className}.` : '';
             if (isReturnValueProblem) {
                 return `The return value from ` +
-                    `'${moduleName}.${className ? (className + '.') : ''}${funcName}()' ` +
-                    `must be an instance of class ${expectedClass.name}.`;
+                    `'${moduleName}.${classNameStr}${funcName}()' ` +
+                    `must be an instance of class ${expectedClassName}.`;
             }
             return `The parameter '${paramName}' passed into ` +
-                `'${moduleName}.${className ? (className + '.') : ''}${funcName}()' ` +
-                `must be an instance of class ${expectedClass.name}.`;
+                `'${moduleName}.${classNameStr}${funcName}()' ` +
+                `must be an instance of class ${expectedClassName}.`;
         },
         'missing-a-method': ({ expectedMethod, paramName, moduleName, className, funcName }) => {
             if (!expectedMethod || !paramName || !moduleName || !className
@@ -73,17 +75,17 @@
             }
             return `Two of the entries passed to ` +
                 `'workbox-precaching.PrecacheController.addToCacheList()' had the URL ` +
-                `${firstEntry._entryId} but different revision details. Workbox is ` +
+                `${firstEntry} but different revision details. Workbox is ` +
                 `unable to cache and version the asset correctly. Please remove one ` +
                 `of the entries.`;
         },
-        'plugin-error-request-will-fetch': ({ thrownError }) => {
-            if (!thrownError) {
+        'plugin-error-request-will-fetch': ({ thrownErrorMessage }) => {
+            if (!thrownErrorMessage) {
                 throw new Error(`Unexpected input to ` +
                     `'plugin-error-request-will-fetch', error.`);
             }
             return `An error was thrown by a plugins 'requestWillFetch()' method. ` +
-                `The thrown error message was: '${thrownError.message}'.`;
+                `The thrown error message was: '${thrownErrorMessage}'.`;
         },
         'invalid-cache-name': ({ cacheNameId, value }) => {
             if (!cacheNameId) {
@@ -303,9 +305,12 @@
             throw new WorkboxError('incorrect-type', details);
         }
     };
-    const isInstance = (object, expectedClass, details) => {
+    const isInstance = (object, 
+    // Need the general type to do the check later.
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    expectedClass, details) => {
         if (!(object instanceof expectedClass)) {
-            details['expectedClass'] = expectedClass;
+            details['expectedClassName'] = expectedClass.name;
             throw new WorkboxError('incorrect-class', details);
         }
     };
@@ -316,7 +321,10 @@
             throw new WorkboxError('invalid-value', details);
         }
     };
-    const isArrayOfClass = (value, expectedClass, details) => {
+    const isArrayOfClass = (value, 
+    // Need general type to do check later.
+    expectedClass, // eslint-disable-line
+    details) => {
         const error = new WorkboxError('not-array-of-class', details);
         if (!Array.isArray(value)) {
             throw error;
@@ -386,6 +394,7 @@
                 inGroup = false;
             }
         };
+        // eslint-disable-next-line @typescript-eslint/ban-types
         const api = {};
         const loggerMethods = Object.keys(methodToColorMap);
         for (const key of loggerMethods) {
@@ -492,7 +501,7 @@
             return cache.match(request, matchOptions);
         }
         // Otherwise, match by comparing keys
-        const keysOptions = { ...matchOptions, ignoreSearch: true };
+        const keysOptions = Object.assign(Object.assign({}, matchOptions), { ignoreSearch: true });
         const cacheKeys = await cache.keys(request, keysOptions);
         for (const cacheKey of cacheKeys) {
             const strippedCacheKeyURL = stripParams(cacheKey.url, ignoreParams);
@@ -538,6 +547,8 @@
       https://opensource.org/licenses/MIT.
     */
     // Callbacks to be executed whenever there's a quota error.
+    // Can't change Function type right now.
+    // eslint-disable-next-line @typescript-eslint/ban-types
     const quotaErrorCallbacks = new Set();
 
     /*
@@ -590,7 +601,7 @@
 
     // @ts-ignore
     try {
-        self['workbox:strategies:6.1.5'] && _();
+        self['workbox:strategies:6.2.4'] && _();
     }
     catch (e) { }
 
@@ -731,9 +742,9 @@
                 }
             }
             catch (err) {
-                throw new WorkboxError('plugin-error-request-will-fetch', {
-                    thrownError: err,
-                });
+                if (err instanceof Error) {
+                    throw new WorkboxError('plugin-error-request-will-fetch', { thrownErrorMessage: err.message });
+                }
             }
             // The request can be altered by plugins with `requestWillFetch` making
             // the original request (most likely from a `fetch` event) different
@@ -767,7 +778,7 @@
                 // is being used (see above).
                 if (originalRequest) {
                     await this.runCallbacks('fetchDidFail', {
-                        error,
+                        error: error,
                         event,
                         originalRequest: originalRequest.clone(),
                         request: pluginFilteredRequest.clone(),
@@ -789,7 +800,7 @@
         async fetchAndCachePut(input) {
             const response = await this.fetch(input);
             const responseClone = response.clone();
-            this.waitUntil(this.cachePut(input, responseClone));
+            void this.waitUntil(this.cachePut(input, responseClone));
             return response;
         }
         /**
@@ -809,7 +820,7 @@
             let cachedResponse;
             const { cacheName, matchOptions } = this._strategy;
             const effectiveRequest = await this.getCacheKey(request, 'read');
-            const multiMatchOptions = { ...matchOptions, ...{ cacheName } };
+            const multiMatchOptions = Object.assign(Object.assign({}, matchOptions), { cacheName });
             cachedResponse = await caches.match(effectiveRequest, multiMatchOptions);
             {
                 if (cachedResponse) {
@@ -894,11 +905,13 @@
                     responseToCache.clone() : responseToCache);
             }
             catch (error) {
-                // See https://developer.mozilla.org/en-US/docs/Web/API/DOMException#exception-QuotaExceededError
-                if (error.name === 'QuotaExceededError') {
-                    await executeQuotaErrorCallbacks();
+                if (error instanceof Error) {
+                    // See https://developer.mozilla.org/en-US/docs/Web/API/DOMException#exception-QuotaExceededError
+                    if (error.name === 'QuotaExceededError') {
+                        await executeQuotaErrorCallbacks();
+                    }
+                    throw error;
                 }
-                throw error;
             }
             for (const callback of this.iterateCallbacks('cacheDidUpdate')) {
                 await callback({
@@ -930,6 +943,7 @@
                         mode,
                         request: effectiveRequest,
                         event: this.event,
+                        // params has a type any can't change right now.
                         params: this.params,
                     }));
                 }
@@ -989,7 +1003,7 @@
                 if (typeof plugin[name] === 'function') {
                     const state = this._pluginStateMap.get(plugin);
                     const statefulCallback = (param) => {
-                        const statefulParam = { ...param, state };
+                        const statefulParam = Object.assign(Object.assign({}, param), { state });
                         // TODO(philipwalton): not sure why `any` is needed. It seems like
                         // this should work with `as WorkboxPluginCallbackParam[C]`.
                         return plugin[name](statefulParam);
@@ -1036,7 +1050,7 @@
          * `waitUntil()` promises.
          */
         destroy() {
-            this._handlerDeferred.resolve();
+            this._handlerDeferred.resolve(null);
         }
         /**
          * This method will call cacheWillUpdate on the available plugins (or use
@@ -1233,10 +1247,12 @@
                 }
             }
             catch (error) {
-                for (const callback of handler.iterateCallbacks('handlerDidError')) {
-                    response = await callback({ error, event, request });
-                    if (response) {
-                        break;
+                if (error instanceof Error) {
+                    for (const callback of handler.iterateCallbacks('handlerDidError')) {
+                        response = await callback({ error, event, request });
+                        if (response) {
+                            break;
+                        }
                     }
                 }
                 if (!response) {
@@ -1244,7 +1260,7 @@
                 }
                 else {
                     logger.log(`While responding to '${getFriendlyURL(request.url)}', ` +
-                        `an ${error} error occurred. Using a fallback response provided by ` +
+                        `an ${error instanceof Error ? error.toString() : ''} error occurred. Using a fallback response provided by ` +
                         `a handlerDidError plugin.`);
                 }
             }
@@ -1273,13 +1289,15 @@
                 await handler.doneWaiting();
             }
             catch (waitUntilError) {
-                error = waitUntilError;
+                if (waitUntilError instanceof Error) {
+                    error = waitUntilError;
+                }
             }
             await handler.runCallbacks('handlerDidComplete', {
                 event,
                 request,
                 response,
-                error,
+                error: error,
             });
             handler.destroy();
             if (error) {
@@ -1363,7 +1381,7 @@
                 });
             }
             let response = await handler.cacheMatch(request);
-            let error;
+            let error = undefined;
             if (!response) {
                 {
                     logs.push(`No response found in the '${this.cacheName}' cache. ` +
@@ -1373,7 +1391,9 @@
                     response = await handler.fetchAndCachePut(request);
                 }
                 catch (err) {
-                    error = err;
+                    if (err instanceof Error) {
+                        error = err;
+                    }
                 }
                 {
                     if (response) {
@@ -1439,6 +1459,192 @@
     */
     /**
      * An implementation of a
+     * [network first]{@link https://developers.google.com/web/fundamentals/instant-and-offline/offline-cookbook/#network-falling-back-to-cache}
+     * request strategy.
+     *
+     * By default, this strategy will cache responses with a 200 status code as
+     * well as [opaque responses]{@link https://developers.google.com/web/tools/workbox/guides/handle-third-party-requests}.
+     * Opaque responses are are cross-origin requests where the response doesn't
+     * support [CORS]{@link https://enable-cors.org/}.
+     *
+     * If the network request fails, and there is no cache match, this will throw
+     * a `WorkboxError` exception.
+     *
+     * @extends module:workbox-strategies.Strategy
+     * @memberof module:workbox-strategies
+     */
+    class NetworkFirst extends Strategy {
+        /**
+         * @param {Object} [options]
+         * @param {string} [options.cacheName] Cache name to store and retrieve
+         * requests. Defaults to cache names provided by
+         * [workbox-core]{@link module:workbox-core.cacheNames}.
+         * @param {Array<Object>} [options.plugins] [Plugins]{@link https://developers.google.com/web/tools/workbox/guides/using-plugins}
+         * to use in conjunction with this caching strategy.
+         * @param {Object} [options.fetchOptions] Values passed along to the
+         * [`init`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters)
+         * of [non-navigation](https://github.com/GoogleChrome/workbox/issues/1796)
+         * `fetch()` requests made by this strategy.
+         * @param {Object} [options.matchOptions] [`CacheQueryOptions`](https://w3c.github.io/ServiceWorker/#dictdef-cachequeryoptions)
+         * @param {number} [options.networkTimeoutSeconds] If set, any network requests
+         * that fail to respond within the timeout will fallback to the cache.
+         *
+         * This option can be used to combat
+         * "[lie-fi]{@link https://developers.google.com/web/fundamentals/performance/poor-connectivity/#lie-fi}"
+         * scenarios.
+         */
+        constructor(options = {}) {
+            super(options);
+            // If this instance contains no plugins with a 'cacheWillUpdate' callback,
+            // prepend the `cacheOkAndOpaquePlugin` plugin to the plugins list.
+            if (!this.plugins.some((p) => 'cacheWillUpdate' in p)) {
+                this.plugins.unshift(cacheOkAndOpaquePlugin);
+            }
+            this._networkTimeoutSeconds = options.networkTimeoutSeconds || 0;
+            {
+                if (this._networkTimeoutSeconds) {
+                    finalAssertExports.isType(this._networkTimeoutSeconds, 'number', {
+                        moduleName: 'workbox-strategies',
+                        className: this.constructor.name,
+                        funcName: 'constructor',
+                        paramName: 'networkTimeoutSeconds',
+                    });
+                }
+            }
+        }
+        /**
+         * @private
+         * @param {Request|string} request A request to run this strategy for.
+         * @param {module:workbox-strategies.StrategyHandler} handler The event that
+         *     triggered the request.
+         * @return {Promise<Response>}
+         */
+        async _handle(request, handler) {
+            const logs = [];
+            {
+                finalAssertExports.isInstance(request, Request, {
+                    moduleName: 'workbox-strategies',
+                    className: this.constructor.name,
+                    funcName: 'handle',
+                    paramName: 'makeRequest',
+                });
+            }
+            const promises = [];
+            let timeoutId;
+            if (this._networkTimeoutSeconds) {
+                const { id, promise } = this._getTimeoutPromise({ request, logs, handler });
+                timeoutId = id;
+                promises.push(promise);
+            }
+            const networkPromise = this._getNetworkPromise({ timeoutId, request, logs, handler });
+            promises.push(networkPromise);
+            const response = await handler.waitUntil((async () => {
+                // Promise.race() will resolve as soon as the first promise resolves.
+                return await handler.waitUntil(Promise.race(promises)) ||
+                    // If Promise.race() resolved with null, it might be due to a network
+                    // timeout + a cache miss. If that were to happen, we'd rather wait until
+                    // the networkPromise resolves instead of returning null.
+                    // Note that it's fine to await an already-resolved promise, so we don't
+                    // have to check to see if it's still "in flight".
+                    await networkPromise;
+            })());
+            {
+                logger.groupCollapsed(messages.strategyStart(this.constructor.name, request));
+                for (const log of logs) {
+                    logger.log(log);
+                }
+                messages.printFinalResponse(response);
+                logger.groupEnd();
+            }
+            if (!response) {
+                throw new WorkboxError('no-response', { url: request.url });
+            }
+            return response;
+        }
+        /**
+         * @param {Object} options
+         * @param {Request} options.request
+         * @param {Array} options.logs A reference to the logs array
+         * @param {Event} options.event
+         * @return {Promise<Response>}
+         *
+         * @private
+         */
+        _getTimeoutPromise({ request, logs, handler }) {
+            let timeoutId;
+            const timeoutPromise = new Promise((resolve) => {
+                const onNetworkTimeout = async () => {
+                    {
+                        logs.push(`Timing out the network response at ` +
+                            `${this._networkTimeoutSeconds} seconds.`);
+                    }
+                    resolve(await handler.cacheMatch(request));
+                };
+                timeoutId = setTimeout(onNetworkTimeout, this._networkTimeoutSeconds * 1000);
+            });
+            return {
+                promise: timeoutPromise,
+                id: timeoutId,
+            };
+        }
+        /**
+         * @param {Object} options
+         * @param {number|undefined} options.timeoutId
+         * @param {Request} options.request
+         * @param {Array} options.logs A reference to the logs Array.
+         * @param {Event} options.event
+         * @return {Promise<Response>}
+         *
+         * @private
+         */
+        async _getNetworkPromise({ timeoutId, request, logs, handler }) {
+            let error;
+            let response;
+            try {
+                response = await handler.fetchAndCachePut(request);
+            }
+            catch (fetchError) {
+                if (fetchError instanceof Error) {
+                    error = fetchError;
+                }
+            }
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            {
+                if (response) {
+                    logs.push(`Got response from network.`);
+                }
+                else {
+                    logs.push(`Unable to get a response from the network. Will respond ` +
+                        `with a cached response.`);
+                }
+            }
+            if (error || !response) {
+                response = await handler.cacheMatch(request);
+                {
+                    if (response) {
+                        logs.push(`Found a cached response in the '${this.cacheName}'` +
+                            ` cache.`);
+                    }
+                    else {
+                        logs.push(`No response found in the '${this.cacheName}' cache.`);
+                    }
+                }
+            }
+            return response;
+        }
+    }
+
+    /*
+      Copyright 2018 Google LLC
+
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    /**
+     * An implementation of a
      * [stale-while-revalidate]{@link https://developers.google.com/web/fundamentals/instant-and-offline/offline-cookbook/#stale-while-revalidate}
      * request strategy.
      *
@@ -1472,7 +1678,7 @@
          * `fetch()` requests made by this strategy.
          * @param {Object} [options.matchOptions] [`CacheQueryOptions`](https://w3c.github.io/ServiceWorker/#dictdef-cachequeryoptions)
          */
-        constructor(options) {
+        constructor(options = {}) {
             super(options);
             // If this instance contains no plugins with a 'cacheWillUpdate' callback,
             // prepend the `cacheOkAndOpaquePlugin` plugin to the plugins list.
@@ -1522,7 +1728,9 @@
                     response = await fetchAndCachePromise;
                 }
                 catch (err) {
-                    error = err;
+                    if (err instanceof Error) {
+                        error = err;
+                    }
                 }
             }
             {
@@ -1542,7 +1750,7 @@
 
     // @ts-ignore
     try {
-        self['workbox:routing:6.1.5'] && _();
+        self['workbox:routing:6.2.4'] && _();
     }
     catch (e) { }
 
@@ -1728,8 +1936,8 @@
                 // behind this behavior.
                 if ((url.origin !== location.origin) && (result.index !== 0)) {
                     {
-                        logger.debug(`The regular expression '${regExp}' only partially matched ` +
-                            `against the cross-origin URL '${url}'. RegExpRoute's will only ` +
+                        logger.debug(`The regular expression '${regExp.toString()}' only partially matched ` +
+                            `against the cross-origin URL '${url.toString()}'. RegExpRoute's will only ` +
                             `handle cross-origin requests if they match the entire URL.`);
                     }
                     return;
@@ -1823,8 +2031,9 @@
         addCacheListener() {
             // See https://github.com/Microsoft/TypeScript/issues/28357#issuecomment-436484705
             self.addEventListener('message', ((event) => {
-                if (event.data && event.data.type === 'CACHE_URLS') {
-                    const { payload } = event.data;
+                // event.data is type 'any'
+                if (event.data && event.data.type === 'CACHE_URLS') { // eslint-disable-line
+                    const { payload } = event.data; // eslint-disable-line
                     {
                         logger.debug(`Caching URLs from the window`, payload.urlsToCache);
                     }
@@ -1841,7 +2050,7 @@
                     event.waitUntil(requestPromises);
                     // If a MessageChannel was used, reply to the message on success.
                     if (event.ports && event.ports[0]) {
-                        requestPromises.then(() => event.ports[0].postMessage(true));
+                        void requestPromises.then(() => event.ports[0].postMessage(true));
                     }
                 }
             }));
@@ -1955,7 +2164,9 @@
                             return await catchHandler.handle({ url, request, event, params });
                         }
                         catch (catchErr) {
-                            err = catchErr;
+                            if (catchErr instanceof Error) {
+                                err = catchErr;
+                            }
                         }
                     }
                     if (this._catchHandler) {
@@ -1994,11 +2205,13 @@
             const routes = this._routes.get(request.method) || [];
             for (const route of routes) {
                 let params;
+                // route.match returns type any, not possible to change right now.
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const matchResult = route.match({ url, sameOrigin, request, event });
                 if (matchResult) {
                     {
                         // Warn developers that using an async matchCallback is almost always
-                        // not the right thing to do. 
+                        // not the right thing to do.
                         if (matchResult instanceof Promise) {
                             logger.warn(`While routing ${getFriendlyURL(url)}, an async ` +
                                 `matchCallback function was used. Please convert the ` +
@@ -2006,12 +2219,13 @@
                         }
                     }
                     // See https://github.com/GoogleChrome/workbox/issues/2079
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     params = matchResult;
-                    if (Array.isArray(matchResult) && matchResult.length === 0) {
+                    if (Array.isArray(params) && params.length === 0) {
                         // Instead of passing an empty array in as params, use undefined.
                         params = undefined;
                     }
-                    else if ((matchResult.constructor === Object &&
+                    else if ((matchResult.constructor === Object && // eslint-disable-line
                         Object.keys(matchResult).length === 0)) {
                         // Instead of passing an empty object in as params, use undefined.
                         params = undefined;
@@ -2202,7 +2416,7 @@
                     if ((url.pathname === captureUrl.pathname) &&
                         (url.origin !== captureUrl.origin)) {
                         logger.debug(`${capture} only partially matches the cross-origin URL ` +
-                            `${url}. This route will only handle cross-origin requests ` +
+                            `${url.toString()}. This route will only handle cross-origin requests ` +
                             `if they match the entire URL.`);
                     }
                 }
@@ -2236,7 +2450,7 @@
 
     // @ts-ignore
     try {
-        self['workbox:cacheable-response:6.1.5'] && _();
+        self['workbox:cacheable-response:6.2.4'] && _();
     }
     catch (e) { }
 
@@ -2342,7 +2556,7 @@
                         logFriendlyHeaders[key] = value;
                     });
                     logger.groupCollapsed(`View response status and headers here.`);
-                    logger.log(`Response status: ` + response.status);
+                    logger.log(`Response status: ${response.status}`);
                     logger.log(`Response headers: ` +
                         JSON.stringify(logFriendlyHeaders, null, 2));
                     logger.groupEnd();
@@ -2416,294 +2630,280 @@
      **/
     function dontWaitFor(promise) {
         // Effective no-op.
-        promise.then(() => { });
+        void promise.then(() => { });
     }
 
-    /*
-      Copyright 2018 Google LLC
+    const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
 
-      Use of this source code is governed by an MIT-style
-      license that can be found in the LICENSE file or at
-      https://opensource.org/licenses/MIT.
-    */
-    /**
-     * A class that wraps common IndexedDB functionality in a promise-based API.
-     * It exposes all the underlying power and functionality of IndexedDB, but
-     * wraps the most commonly used features in a way that's much simpler to use.
-     *
-     * @private
-     */
-    class DBWrapper {
-        /**
-         * @param {string} name
-         * @param {number} version
-         * @param {Object=} [callback]
-         * @param {!Function} [callbacks.onupgradeneeded]
-         * @param {!Function} [callbacks.onversionchange] Defaults to
-         *     DBWrapper.prototype._onversionchange when not specified.
-         * @private
-         */
-        constructor(name, version, { onupgradeneeded, onversionchange, } = {}) {
-            this._db = null;
-            this._name = name;
-            this._version = version;
-            this._onupgradeneeded = onupgradeneeded;
-            this._onversionchange = onversionchange || (() => this.close());
-        }
-        /**
-         * Returns the IDBDatabase instance (not normally needed).
-         * @return {IDBDatabase|undefined}
-         *
-         * @private
-         */
-        get db() {
-            return this._db;
-        }
-        /**
-         * Opens a connected to an IDBDatabase, invokes any onupgradedneeded
-         * callback, and added an onversionchange callback to the database.
-         *
-         * @return {IDBDatabase}
-         * @private
-         */
-        async open() {
-            if (this._db)
-                return;
-            this._db = await new Promise((resolve, reject) => {
-                // This flag is flipped to true if the timeout callback runs prior
-                // to the request failing or succeeding. Note: we use a timeout instead
-                // of an onblocked handler since there are cases where onblocked will
-                // never never run. A timeout better handles all possible scenarios:
-                // https://github.com/w3c/IndexedDB/issues/223
-                let openRequestTimedOut = false;
-                setTimeout(() => {
-                    openRequestTimedOut = true;
-                    reject(new Error('The open request was blocked and timed out'));
-                }, this.OPEN_TIMEOUT);
-                const openRequest = indexedDB.open(this._name, this._version);
-                openRequest.onerror = () => reject(openRequest.error);
-                openRequest.onupgradeneeded = (evt) => {
-                    if (openRequestTimedOut) {
-                        openRequest.transaction.abort();
-                        openRequest.result.close();
-                    }
-                    else if (typeof this._onupgradeneeded === 'function') {
-                        this._onupgradeneeded(evt);
-                    }
-                };
-                openRequest.onsuccess = () => {
-                    const db = openRequest.result;
-                    if (openRequestTimedOut) {
-                        db.close();
-                    }
-                    else {
-                        db.onversionchange = this._onversionchange.bind(this);
-                        resolve(db);
-                    }
-                };
-            });
-            return this;
-        }
-        /**
-         * Polyfills the native `getKey()` method. Note, this is overridden at
-         * runtime if the browser supports the native method.
-         *
-         * @param {string} storeName
-         * @param {*} query
-         * @return {Array}
-         * @private
-         */
-        async getKey(storeName, query) {
-            return (await this.getAllKeys(storeName, query, 1))[0];
-        }
-        /**
-         * Polyfills the native `getAll()` method. Note, this is overridden at
-         * runtime if the browser supports the native method.
-         *
-         * @param {string} storeName
-         * @param {*} query
-         * @param {number} count
-         * @return {Array}
-         * @private
-         */
-        async getAll(storeName, query, count) {
-            return await this.getAllMatching(storeName, { query, count });
-        }
-        /**
-         * Polyfills the native `getAllKeys()` method. Note, this is overridden at
-         * runtime if the browser supports the native method.
-         *
-         * @param {string} storeName
-         * @param {*} query
-         * @param {number} count
-         * @return {Array}
-         * @private
-         */
-        async getAllKeys(storeName, query, count) {
-            const entries = await this.getAllMatching(storeName, { query, count, includeKeys: true });
-            return entries.map((entry) => entry.key);
-        }
-        /**
-         * Supports flexible lookup in an object store by specifying an index,
-         * query, direction, and count. This method returns an array of objects
-         * with the signature .
-         *
-         * @param {string} storeName
-         * @param {Object} [opts]
-         * @param {string} [opts.index] The index to use (if specified).
-         * @param {*} [opts.query]
-         * @param {IDBCursorDirection} [opts.direction]
-         * @param {number} [opts.count] The max number of results to return.
-         * @param {boolean} [opts.includeKeys] When true, the structure of the
-         *     returned objects is changed from an array of values to an array of
-         *     objects in the form {key, primaryKey, value}.
-         * @return {Array}
-         * @private
-         */
-        async getAllMatching(storeName, { index, query = null, // IE/Edge errors if query === `undefined`.
-        direction = 'next', count, includeKeys = false, } = {}) {
-            return await this.transaction([storeName], 'readonly', (txn, done) => {
-                const store = txn.objectStore(storeName);
-                const target = index ? store.index(index) : store;
-                const results = [];
-                const request = target.openCursor(query, direction);
-                request.onsuccess = () => {
-                    const cursor = request.result;
-                    if (cursor) {
-                        results.push(includeKeys ? cursor : cursor.value);
-                        if (count && results.length >= count) {
-                            done(results);
-                        }
-                        else {
-                            cursor.continue();
-                        }
-                    }
-                    else {
-                        done(results);
-                    }
-                };
-            });
-        }
-        /**
-         * Accepts a list of stores, a transaction type, and a callback and
-         * performs a transaction. A promise is returned that resolves to whatever
-         * value the callback chooses. The callback holds all the transaction logic
-         * and is invoked with two arguments:
-         *   1. The IDBTransaction object
-         *   2. A `done` function, that's used to resolve the promise when
-         *      when the transaction is done, if passed a value, the promise is
-         *      resolved to that value.
-         *
-         * @param {Array<string>} storeNames An array of object store names
-         *     involved in the transaction.
-         * @param {string} type Can be `readonly` or `readwrite`.
-         * @param {!Function} callback
-         * @return {*} The result of the transaction ran by the callback.
-         * @private
-         */
-        async transaction(storeNames, type, callback) {
-            await this.open();
-            return await new Promise((resolve, reject) => {
-                const txn = this._db.transaction(storeNames, type);
-                txn.onabort = () => reject(txn.error);
-                txn.oncomplete = () => resolve();
-                callback(txn, (value) => resolve(value));
-            });
-        }
-        /**
-         * Delegates async to a native IDBObjectStore method.
-         *
-         * @param {string} method The method name.
-         * @param {string} storeName The object store name.
-         * @param {string} type Can be `readonly` or `readwrite`.
-         * @param {...*} args The list of args to pass to the native method.
-         * @return {*} The result of the transaction.
-         * @private
-         */
-        async _call(method, storeName, type, ...args) {
-            const callback = (txn, done) => {
-                const objStore = txn.objectStore(storeName);
-                // TODO(philipwalton): Fix this underlying TS2684 error.
-                // @ts-ignore
-                const request = objStore[method].apply(objStore, args);
-                request.onsuccess = () => done(request.result);
+    let idbProxyableTypes;
+    let cursorAdvanceMethods;
+    // This is a function to prevent it throwing up in node environments.
+    function getIdbProxyableTypes() {
+        return (idbProxyableTypes ||
+            (idbProxyableTypes = [
+                IDBDatabase,
+                IDBObjectStore,
+                IDBIndex,
+                IDBCursor,
+                IDBTransaction,
+            ]));
+    }
+    // This is a function to prevent it throwing up in node environments.
+    function getCursorAdvanceMethods() {
+        return (cursorAdvanceMethods ||
+            (cursorAdvanceMethods = [
+                IDBCursor.prototype.advance,
+                IDBCursor.prototype.continue,
+                IDBCursor.prototype.continuePrimaryKey,
+            ]));
+    }
+    const cursorRequestMap = new WeakMap();
+    const transactionDoneMap = new WeakMap();
+    const transactionStoreNamesMap = new WeakMap();
+    const transformCache = new WeakMap();
+    const reverseTransformCache = new WeakMap();
+    function promisifyRequest(request) {
+        const promise = new Promise((resolve, reject) => {
+            const unlisten = () => {
+                request.removeEventListener('success', success);
+                request.removeEventListener('error', error);
             };
-            return await this.transaction([storeName], type, callback);
-        }
-        /**
-         * Closes the connection opened by `DBWrapper.open()`. Generally this method
-         * doesn't need to be called since:
-         *   1. It's usually better to keep a connection open since opening
-         *      a new connection is somewhat slow.
-         *   2. Connections are automatically closed when the reference is
-         *      garbage collected.
-         * The primary use case for needing to close a connection is when another
-         * reference (typically in another tab) needs to upgrade it and would be
-         * blocked by the current, open connection.
-         *
-         * @private
-         */
-        close() {
-            if (this._db) {
-                this._db.close();
-                this._db = null;
-            }
-        }
-    }
-    // Exposed on the prototype to let users modify the default timeout on a
-    // per-instance or global basis.
-    DBWrapper.prototype.OPEN_TIMEOUT = 2000;
-    // Wrap native IDBObjectStore methods according to their mode.
-    const methodsToWrap = {
-        readonly: ['get', 'count', 'getKey', 'getAll', 'getAllKeys'],
-        readwrite: ['add', 'put', 'clear', 'delete'],
-    };
-    for (const [mode, methods] of Object.entries(methodsToWrap)) {
-        for (const method of methods) {
-            if (method in IDBObjectStore.prototype) {
-                // Don't use arrow functions here since we're outside of the class.
-                DBWrapper.prototype[method] =
-                    async function (storeName, ...args) {
-                        return await this._call(method, storeName, mode, ...args);
-                    };
-            }
-        }
-    }
-
-    /*
-      Copyright 2018 Google LLC
-
-      Use of this source code is governed by an MIT-style
-      license that can be found in the LICENSE file or at
-      https://opensource.org/licenses/MIT.
-    */
-    /**
-     * Deletes the database.
-     * Note: this is exported separately from the DBWrapper module because most
-     * usages of IndexedDB in workbox dont need deleting, and this way it can be
-     * reused in tests to delete databases without creating DBWrapper instances.
-     *
-     * @param {string} name The database name.
-     * @private
-     */
-    const deleteDatabase = async (name) => {
-        await new Promise((resolve, reject) => {
-            const request = indexedDB.deleteDatabase(name);
-            request.onerror = () => {
+            const success = () => {
+                resolve(wrap(request.result));
+                unlisten();
+            };
+            const error = () => {
                 reject(request.error);
+                unlisten();
             };
-            request.onblocked = () => {
-                reject(new Error('Delete blocked'));
-            };
-            request.onsuccess = () => {
-                resolve();
-            };
+            request.addEventListener('success', success);
+            request.addEventListener('error', error);
         });
+        promise
+            .then((value) => {
+            // Since cursoring reuses the IDBRequest (*sigh*), we cache it for later retrieval
+            // (see wrapFunction).
+            if (value instanceof IDBCursor) {
+                cursorRequestMap.set(value, request);
+            }
+            // Catching to avoid "Uncaught Promise exceptions"
+        })
+            .catch(() => { });
+        // This mapping exists in reverseTransformCache but doesn't doesn't exist in transformCache. This
+        // is because we create many promises from a single IDBRequest.
+        reverseTransformCache.set(promise, request);
+        return promise;
+    }
+    function cacheDonePromiseForTransaction(tx) {
+        // Early bail if we've already created a done promise for this transaction.
+        if (transactionDoneMap.has(tx))
+            return;
+        const done = new Promise((resolve, reject) => {
+            const unlisten = () => {
+                tx.removeEventListener('complete', complete);
+                tx.removeEventListener('error', error);
+                tx.removeEventListener('abort', error);
+            };
+            const complete = () => {
+                resolve();
+                unlisten();
+            };
+            const error = () => {
+                reject(tx.error || new DOMException('AbortError', 'AbortError'));
+                unlisten();
+            };
+            tx.addEventListener('complete', complete);
+            tx.addEventListener('error', error);
+            tx.addEventListener('abort', error);
+        });
+        // Cache it for later retrieval.
+        transactionDoneMap.set(tx, done);
+    }
+    let idbProxyTraps = {
+        get(target, prop, receiver) {
+            if (target instanceof IDBTransaction) {
+                // Special handling for transaction.done.
+                if (prop === 'done')
+                    return transactionDoneMap.get(target);
+                // Polyfill for objectStoreNames because of Edge.
+                if (prop === 'objectStoreNames') {
+                    return target.objectStoreNames || transactionStoreNamesMap.get(target);
+                }
+                // Make tx.store return the only store in the transaction, or undefined if there are many.
+                if (prop === 'store') {
+                    return receiver.objectStoreNames[1]
+                        ? undefined
+                        : receiver.objectStore(receiver.objectStoreNames[0]);
+                }
+            }
+            // Else transform whatever we get back.
+            return wrap(target[prop]);
+        },
+        set(target, prop, value) {
+            target[prop] = value;
+            return true;
+        },
+        has(target, prop) {
+            if (target instanceof IDBTransaction &&
+                (prop === 'done' || prop === 'store')) {
+                return true;
+            }
+            return prop in target;
+        },
     };
+    function replaceTraps(callback) {
+        idbProxyTraps = callback(idbProxyTraps);
+    }
+    function wrapFunction(func) {
+        // Due to expected object equality (which is enforced by the caching in `wrap`), we
+        // only create one new func per func.
+        // Edge doesn't support objectStoreNames (booo), so we polyfill it here.
+        if (func === IDBDatabase.prototype.transaction &&
+            !('objectStoreNames' in IDBTransaction.prototype)) {
+            return function (storeNames, ...args) {
+                const tx = func.call(unwrap(this), storeNames, ...args);
+                transactionStoreNamesMap.set(tx, storeNames.sort ? storeNames.sort() : [storeNames]);
+                return wrap(tx);
+            };
+        }
+        // Cursor methods are special, as the behaviour is a little more different to standard IDB. In
+        // IDB, you advance the cursor and wait for a new 'success' on the IDBRequest that gave you the
+        // cursor. It's kinda like a promise that can resolve with many values. That doesn't make sense
+        // with real promises, so each advance methods returns a new promise for the cursor object, or
+        // undefined if the end of the cursor has been reached.
+        if (getCursorAdvanceMethods().includes(func)) {
+            return function (...args) {
+                // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
+                // the original object.
+                func.apply(unwrap(this), args);
+                return wrap(cursorRequestMap.get(this));
+            };
+        }
+        return function (...args) {
+            // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
+            // the original object.
+            return wrap(func.apply(unwrap(this), args));
+        };
+    }
+    function transformCachableValue(value) {
+        if (typeof value === 'function')
+            return wrapFunction(value);
+        // This doesn't return, it just creates a 'done' promise for the transaction,
+        // which is later returned for transaction.done (see idbObjectHandler).
+        if (value instanceof IDBTransaction)
+            cacheDonePromiseForTransaction(value);
+        if (instanceOfAny(value, getIdbProxyableTypes()))
+            return new Proxy(value, idbProxyTraps);
+        // Return the same value back if we're not going to transform it.
+        return value;
+    }
+    function wrap(value) {
+        // We sometimes generate multiple promises from a single IDBRequest (eg when cursoring), because
+        // IDB is weird and a single IDBRequest can yield many responses, so these can't be cached.
+        if (value instanceof IDBRequest)
+            return promisifyRequest(value);
+        // If we've already transformed this value before, reuse the transformed value.
+        // This is faster, but it also provides object equality.
+        if (transformCache.has(value))
+            return transformCache.get(value);
+        const newValue = transformCachableValue(value);
+        // Not all types are transformed.
+        // These may be primitive types, so they can't be WeakMap keys.
+        if (newValue !== value) {
+            transformCache.set(value, newValue);
+            reverseTransformCache.set(newValue, value);
+        }
+        return newValue;
+    }
+    const unwrap = (value) => reverseTransformCache.get(value);
+
+    /**
+     * Open a database.
+     *
+     * @param name Name of the database.
+     * @param version Schema version.
+     * @param callbacks Additional callbacks.
+     */
+    function openDB(name, version, { blocked, upgrade, blocking, terminated } = {}) {
+        const request = indexedDB.open(name, version);
+        const openPromise = wrap(request);
+        if (upgrade) {
+            request.addEventListener('upgradeneeded', (event) => {
+                upgrade(wrap(request.result), event.oldVersion, event.newVersion, wrap(request.transaction));
+            });
+        }
+        if (blocked)
+            request.addEventListener('blocked', () => blocked());
+        openPromise
+            .then((db) => {
+            if (terminated)
+                db.addEventListener('close', () => terminated());
+            if (blocking)
+                db.addEventListener('versionchange', () => blocking());
+        })
+            .catch(() => { });
+        return openPromise;
+    }
+    /**
+     * Delete a database.
+     *
+     * @param name Name of the database.
+     */
+    function deleteDB(name, { blocked } = {}) {
+        const request = indexedDB.deleteDatabase(name);
+        if (blocked)
+            request.addEventListener('blocked', () => blocked());
+        return wrap(request).then(() => undefined);
+    }
+
+    const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
+    const writeMethods = ['put', 'add', 'delete', 'clear'];
+    const cachedMethods = new Map();
+    function getMethod(target, prop) {
+        if (!(target instanceof IDBDatabase &&
+            !(prop in target) &&
+            typeof prop === 'string')) {
+            return;
+        }
+        if (cachedMethods.get(prop))
+            return cachedMethods.get(prop);
+        const targetFuncName = prop.replace(/FromIndex$/, '');
+        const useIndex = prop !== targetFuncName;
+        const isWrite = writeMethods.includes(targetFuncName);
+        if (
+        // Bail if the target doesn't exist on the target. Eg, getAll isn't in Edge.
+        !(targetFuncName in (useIndex ? IDBIndex : IDBObjectStore).prototype) ||
+            !(isWrite || readMethods.includes(targetFuncName))) {
+            return;
+        }
+        const method = async function (storeName, ...args) {
+            // isWrite ? 'readwrite' : undefined gzipps better, but fails in Edge :(
+            const tx = this.transaction(storeName, isWrite ? 'readwrite' : 'readonly');
+            let target = tx.store;
+            if (useIndex)
+                target = target.index(args.shift());
+            // Must reject if op rejects.
+            // If it's a write operation, must reject if tx.done rejects.
+            // Must reject with op rejection first.
+            // Must resolve with op value.
+            // Must handle both promises (no unhandled rejections)
+            return (await Promise.all([
+                target[targetFuncName](...args),
+                isWrite && tx.done,
+            ]))[0];
+        };
+        cachedMethods.set(prop, method);
+        return method;
+    }
+    replaceTraps((oldTraps) => ({
+        ...oldTraps,
+        get: (target, prop, receiver) => getMethod(target, prop) || oldTraps.get(target, prop, receiver),
+        has: (target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop),
+    }));
 
     // @ts-ignore
     try {
-        self['workbox:expiration:6.1.5'] && _();
+        self['workbox:expiration:6.2.4'] && _();
     }
     catch (e) { }
 
@@ -2715,7 +2915,7 @@
       https://opensource.org/licenses/MIT.
     */
     const DB_NAME = 'workbox-expiration';
-    const OBJECT_STORE_NAME = 'cache-entries';
+    const CACHE_OBJECT_STORE = 'cache-entries';
     const normalizeURL = (unNormalizedUrl) => {
         const url = new URL(unNormalizedUrl, location.href);
         url.hash = '';
@@ -2734,33 +2934,40 @@
          * @private
          */
         constructor(cacheName) {
+            this._db = null;
             this._cacheName = cacheName;
-            this._db = new DBWrapper(DB_NAME, 1, {
-                onupgradeneeded: (event) => this._handleUpgrade(event),
-            });
         }
         /**
-         * Should perform an upgrade of indexedDB.
+         * Performs an upgrade of indexedDB.
          *
-         * @param {Event} event
+         * @param {IDBPDatabase<CacheDbSchema>} db
          *
          * @private
          */
-        _handleUpgrade(event) {
-            const db = event.target.result;
+        _upgradeDb(db) {
             // TODO(philipwalton): EdgeHTML doesn't support arrays as a keyPath, so we
             // have to use the `id` keyPath here and create our own values (a
             // concatenation of `url + cacheName`) instead of simply using
             // `keyPath: ['url', 'cacheName']`, which is supported in other browsers.
-            const objStore = db.createObjectStore(OBJECT_STORE_NAME, { keyPath: 'id' });
+            const objStore = db.createObjectStore(CACHE_OBJECT_STORE, { keyPath: 'id' });
             // TODO(philipwalton): once we don't have to support EdgeHTML, we can
             // create a single index with the keyPath `['cacheName', 'timestamp']`
             // instead of doing both these indexes.
             objStore.createIndex('cacheName', 'cacheName', { unique: false });
             objStore.createIndex('timestamp', 'timestamp', { unique: false });
-            // Previous versions of `workbox-expiration` used `this._cacheName`
-            // as the IDBDatabase name.
-            deleteDatabase(this._cacheName);
+        }
+        /**
+         * Performs an upgrade of indexedDB and deletes deprecated DBs.
+         *
+         * @param {IDBPDatabase<CacheDbSchema>} db
+         *
+         * @private
+         */
+        _upgradeDbAndDeleteOldDbs(db) {
+            this._upgradeDb(db);
+            if (this._cacheName) {
+                void deleteDB(this._cacheName);
+            }
         }
         /**
          * @param {string} url
@@ -2779,19 +2986,21 @@
                 // array keyPaths.
                 id: this._getId(url),
             };
-            await this._db.put(OBJECT_STORE_NAME, entry);
+            const db = await this.getDb();
+            await db.put(CACHE_OBJECT_STORE, entry);
         }
         /**
          * Returns the timestamp stored for a given URL.
          *
          * @param {string} url
-         * @return {number}
+         * @return {number | undefined}
          *
          * @private
          */
         async getTimestamp(url) {
-            const entry = await this._db.get(OBJECT_STORE_NAME, this._getId(url));
-            return entry.timestamp;
+            const db = await this.getDb();
+            const entry = await db.get(CACHE_OBJECT_STORE, this._getId(url));
+            return entry === null || entry === void 0 ? void 0 : entry.timestamp;
         }
         /**
          * Iterates through all the entries in the object store (from newest to
@@ -2805,50 +3014,42 @@
          * @private
          */
         async expireEntries(minTimestamp, maxCount) {
-            const entriesToDelete = await this._db.transaction(OBJECT_STORE_NAME, 'readwrite', (txn, done) => {
-                const store = txn.objectStore(OBJECT_STORE_NAME);
-                const request = store.index('timestamp').openCursor(null, 'prev');
-                const entriesToDelete = [];
-                let entriesNotDeletedCount = 0;
-                request.onsuccess = () => {
-                    const cursor = request.result;
-                    if (cursor) {
-                        const result = cursor.value;
-                        // TODO(philipwalton): once we can use a multi-key index, we
-                        // won't have to check `cacheName` here.
-                        if (result.cacheName === this._cacheName) {
-                            // Delete an entry if it's older than the max age or
-                            // if we already have the max number allowed.
-                            if ((minTimestamp && result.timestamp < minTimestamp) ||
-                                (maxCount && entriesNotDeletedCount >= maxCount)) {
-                                // TODO(philipwalton): we should be able to delete the
-                                // entry right here, but doing so causes an iteration
-                                // bug in Safari stable (fixed in TP). Instead we can
-                                // store the keys of the entries to delete, and then
-                                // delete the separate transactions.
-                                // https://github.com/GoogleChrome/workbox/issues/1978
-                                // cursor.delete();
-                                // We only need to return the URL, not the whole entry.
-                                entriesToDelete.push(cursor.value);
-                            }
-                            else {
-                                entriesNotDeletedCount++;
-                            }
-                        }
-                        cursor.continue();
+            const db = await this.getDb();
+            let cursor = await db.transaction(CACHE_OBJECT_STORE).store.index('timestamp').openCursor(null, 'prev');
+            const entriesToDelete = [];
+            let entriesNotDeletedCount = 0;
+            while (cursor) {
+                const result = cursor.value;
+                // TODO(philipwalton): once we can use a multi-key index, we
+                // won't have to check `cacheName` here.
+                if (result.cacheName === this._cacheName) {
+                    // Delete an entry if it's older than the max age or
+                    // if we already have the max number allowed.
+                    if ((minTimestamp && result.timestamp < minTimestamp) ||
+                        (maxCount && entriesNotDeletedCount >= maxCount)) {
+                        // TODO(philipwalton): we should be able to delete the
+                        // entry right here, but doing so causes an iteration
+                        // bug in Safari stable (fixed in TP). Instead we can
+                        // store the keys of the entries to delete, and then
+                        // delete the separate transactions.
+                        // https://github.com/GoogleChrome/workbox/issues/1978
+                        // cursor.delete();
+                        // We only need to return the URL, not the whole entry.
+                        entriesToDelete.push(cursor.value);
                     }
                     else {
-                        done(entriesToDelete);
+                        entriesNotDeletedCount++;
                     }
-                };
-            });
+                }
+                cursor = await cursor.continue();
+            }
             // TODO(philipwalton): once the Safari bug in the following issue is fixed,
             // we should be able to remove this loop and do the entry deletion in the
             // cursor loop above:
             // https://github.com/GoogleChrome/workbox/issues/1978
             const urlsDeleted = [];
             for (const entry of entriesToDelete) {
-                await this._db.delete(OBJECT_STORE_NAME, entry.id);
+                await db.delete(CACHE_OBJECT_STORE, entry.id);
                 urlsDeleted.push(entry.url);
             }
             return urlsDeleted;
@@ -2866,6 +3067,19 @@
             // Edge switches to Chromium and all browsers we support work with
             // array keyPaths.
             return this._cacheName + '|' + normalizeURL(url);
+        }
+        /**
+          * Returns an open connection to the database.
+          *
+          * @private
+          */
+        async getDb() {
+            if (!this._db) {
+                this._db = await openDB(DB_NAME, 1, {
+                    upgrade: this._upgradeDbAndDeleteOldDbs.bind(this),
+                });
+            }
+            return this._db;
         }
     }
 
@@ -3016,7 +3230,7 @@
             else {
                 const timestamp = await this._timestampModel.getTimestamp(url);
                 const expireOlderThan = Date.now() - (this._maxAgeSeconds * 1000);
-                return (timestamp < expireOlderThan);
+                return timestamp !== undefined ? (timestamp < expireOlderThan) : true;
             }
         }
         /**
@@ -3045,6 +3259,8 @@
      * @param {Function} callback
      * @memberof module:workbox-core
      */
+    // Can't change Function type
+    // eslint-disable-next-line @typescript-eslint/ban-types
     function registerQuotaErrorCallback(callback) {
         {
             finalAssertExports.isType(callback, 'function', {
@@ -3091,7 +3307,7 @@
      */
     class ExpirationPlugin {
         /**
-         * @param {Object} config
+         * @param {ExpirationPluginOptions} config
          * @param {number} [config.maxEntries] The maximum number of entries to cache.
          * Entries used the least will be removed as the maximum is reached.
          * @param {number} [config.maxAgeSeconds] The maximum age of an entry before
@@ -3353,7 +3569,7 @@
 
     // @ts-ignore
     try {
-        self['workbox:broadcast-update:6.1.5'] && _();
+        self['workbox:broadcast-update:6.2.4'] && _();
     }
     catch (e) { }
 
@@ -3612,28 +3828,1062 @@
         }
     }
 
-    // all resources from site root
-    registerRoute(new RegExp('/'),
-      new StaleWhileRevalidate({
-        cacheName: 'app-runtime',
+    /*
+      Copyright 2020 Google LLC
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    /**
+     * A utility method that makes it easier to use `event.waitUntil` with
+     * async functions and return the result.
+     *
+     * @param {ExtendableEvent} event
+     * @param {Function} asyncFn
+     * @return {Function}
+     * @private
+     */
+    function waitUntil(event, asyncFn) {
+        const returnPromise = asyncFn();
+        event.waitUntil(returnPromise);
+        return returnPromise;
+    }
+
+    // @ts-ignore
+    try {
+        self['workbox:precaching:6.2.4'] && _();
+    }
+    catch (e) { }
+
+    /*
+      Copyright 2018 Google LLC
+
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    // Name of the search parameter used to store revision info.
+    const REVISION_SEARCH_PARAM = '__WB_REVISION__';
+    /**
+     * Converts a manifest entry into a versioned URL suitable for precaching.
+     *
+     * @param {Object|string} entry
+     * @return {string} A URL with versioning info.
+     *
+     * @private
+     * @memberof module:workbox-precaching
+     */
+    function createCacheKey(entry) {
+        if (!entry) {
+            throw new WorkboxError('add-to-cache-list-unexpected-type', { entry });
+        }
+        // If a precache manifest entry is a string, it's assumed to be a versioned
+        // URL, like '/app.abcd1234.js'. Return as-is.
+        if (typeof entry === 'string') {
+            const urlObject = new URL(entry, location.href);
+            return {
+                cacheKey: urlObject.href,
+                url: urlObject.href,
+            };
+        }
+        const { revision, url } = entry;
+        if (!url) {
+            throw new WorkboxError('add-to-cache-list-unexpected-type', { entry });
+        }
+        // If there's just a URL and no revision, then it's also assumed to be a
+        // versioned URL.
+        if (!revision) {
+            const urlObject = new URL(url, location.href);
+            return {
+                cacheKey: urlObject.href,
+                url: urlObject.href,
+            };
+        }
+        // Otherwise, construct a properly versioned URL using the custom Workbox
+        // search parameter along with the revision info.
+        const cacheKeyURL = new URL(url, location.href);
+        const originalURL = new URL(url, location.href);
+        cacheKeyURL.searchParams.set(REVISION_SEARCH_PARAM, revision);
+        return {
+            cacheKey: cacheKeyURL.href,
+            url: originalURL.href,
+        };
+    }
+
+    /*
+      Copyright 2020 Google LLC
+
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    /**
+     * A plugin, designed to be used with PrecacheController, to determine the
+     * of assets that were updated (or not updated) during the install event.
+     *
+     * @private
+     */
+    class PrecacheInstallReportPlugin {
+        constructor() {
+            this.updatedURLs = [];
+            this.notUpdatedURLs = [];
+            this.handlerWillStart = async ({ request, state, }) => {
+                // TODO: `state` should never be undefined...
+                if (state) {
+                    state.originalRequest = request;
+                }
+            };
+            this.cachedResponseWillBeUsed = async ({ event, state, cachedResponse, }) => {
+                if (event.type === 'install') {
+                    if (state && state.originalRequest
+                        && state.originalRequest instanceof Request) {
+                        // TODO: `state` should never be undefined...
+                        const url = state.originalRequest.url;
+                        if (cachedResponse) {
+                            this.notUpdatedURLs.push(url);
+                        }
+                        else {
+                            this.updatedURLs.push(url);
+                        }
+                    }
+                }
+                return cachedResponse;
+            };
+        }
+    }
+
+    /*
+      Copyright 2020 Google LLC
+
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    /**
+     * A plugin, designed to be used with PrecacheController, to translate URLs into
+     * the corresponding cache key, based on the current revision info.
+     *
+     * @private
+     */
+    class PrecacheCacheKeyPlugin {
+        constructor({ precacheController }) {
+            this.cacheKeyWillBeUsed = async ({ request, params, }) => {
+                // Params is type any, can't change right now.
+                // eslint-disable-next-line
+                const cacheKey = params && params.cacheKey ||
+                    this._precacheController.getCacheKeyForURL(request.url);
+                return cacheKey ? new Request(cacheKey) : request;
+            };
+            this._precacheController = precacheController;
+        }
+    }
+
+    /*
+      Copyright 2018 Google LLC
+
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    /**
+     * @param {string} groupTitle
+     * @param {Array<string>} deletedURLs
+     *
+     * @private
+     */
+    const logGroup = (groupTitle, deletedURLs) => {
+        logger.groupCollapsed(groupTitle);
+        for (const url of deletedURLs) {
+            logger.log(url);
+        }
+        logger.groupEnd();
+    };
+    /**
+     * @param {Array<string>} deletedURLs
+     *
+     * @private
+     * @memberof module:workbox-precaching
+     */
+    function printCleanupDetails(deletedURLs) {
+        const deletionCount = deletedURLs.length;
+        if (deletionCount > 0) {
+            logger.groupCollapsed(`During precaching cleanup, ` +
+                `${deletionCount} cached ` +
+                `request${deletionCount === 1 ? ' was' : 's were'} deleted.`);
+            logGroup('Deleted Cache Requests', deletedURLs);
+            logger.groupEnd();
+        }
+    }
+
+    /*
+      Copyright 2018 Google LLC
+
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    /**
+     * @param {string} groupTitle
+     * @param {Array<string>} urls
+     *
+     * @private
+     */
+    function _nestedGroup(groupTitle, urls) {
+        if (urls.length === 0) {
+            return;
+        }
+        logger.groupCollapsed(groupTitle);
+        for (const url of urls) {
+            logger.log(url);
+        }
+        logger.groupEnd();
+    }
+    /**
+     * @param {Array<string>} urlsToPrecache
+     * @param {Array<string>} urlsAlreadyPrecached
+     *
+     * @private
+     * @memberof module:workbox-precaching
+     */
+    function printInstallDetails(urlsToPrecache, urlsAlreadyPrecached) {
+        const precachedCount = urlsToPrecache.length;
+        const alreadyPrecachedCount = urlsAlreadyPrecached.length;
+        if (precachedCount || alreadyPrecachedCount) {
+            let message = `Precaching ${precachedCount} file${precachedCount === 1 ? '' : 's'}.`;
+            if (alreadyPrecachedCount > 0) {
+                message += ` ${alreadyPrecachedCount} ` +
+                    `file${alreadyPrecachedCount === 1 ? ' is' : 's are'} already cached.`;
+            }
+            logger.groupCollapsed(message);
+            _nestedGroup(`View newly precached URLs.`, urlsToPrecache);
+            _nestedGroup(`View previously precached URLs.`, urlsAlreadyPrecached);
+            logger.groupEnd();
+        }
+    }
+
+    /*
+      Copyright 2019 Google LLC
+
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    let supportStatus;
+    /**
+     * A utility function that determines whether the current browser supports
+     * constructing a new `Response` from a `response.body` stream.
+     *
+     * @return {boolean} `true`, if the current browser can successfully
+     *     construct a `Response` from a `response.body` stream, `false` otherwise.
+     *
+     * @private
+     */
+    function canConstructResponseFromBodyStream() {
+        if (supportStatus === undefined) {
+            const testResponse = new Response('');
+            if ('body' in testResponse) {
+                try {
+                    new Response(testResponse.body);
+                    supportStatus = true;
+                }
+                catch (error) {
+                    supportStatus = false;
+                }
+            }
+            supportStatus = false;
+        }
+        return supportStatus;
+    }
+
+    /*
+      Copyright 2019 Google LLC
+
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    /**
+     * Allows developers to copy a response and modify its `headers`, `status`,
+     * or `statusText` values (the values settable via a
+     * [`ResponseInit`]{@link https://developer.mozilla.org/en-US/docs/Web/API/Response/Response#Syntax}
+     * object in the constructor).
+     * To modify these values, pass a function as the second argument. That
+     * function will be invoked with a single object with the response properties
+     * `{headers, status, statusText}`. The return value of this function will
+     * be used as the `ResponseInit` for the new `Response`. To change the values
+     * either modify the passed parameter(s) and return it, or return a totally
+     * new object.
+     *
+     * This method is intentionally limited to same-origin responses, regardless of
+     * whether CORS was used or not.
+     *
+     * @param {Response} response
+     * @param {Function} modifier
+     * @memberof module:workbox-core
+     */
+    async function copyResponse(response, modifier) {
+        let origin = null;
+        // If response.url isn't set, assume it's cross-origin and keep origin null.
+        if (response.url) {
+            const responseURL = new URL(response.url);
+            origin = responseURL.origin;
+        }
+        if (origin !== self.location.origin) {
+            throw new WorkboxError('cross-origin-copy-response', { origin });
+        }
+        const clonedResponse = response.clone();
+        // Create a fresh `ResponseInit` object by cloning the headers.
+        const responseInit = {
+            headers: new Headers(clonedResponse.headers),
+            status: clonedResponse.status,
+            statusText: clonedResponse.statusText,
+        };
+        // Apply any user modifications.
+        const modifiedResponseInit = modifier ? modifier(responseInit) : responseInit;
+        // Create the new response from the body stream and `ResponseInit`
+        // modifications. Note: not all browsers support the Response.body stream,
+        // so fall back to reading the entire body into memory as a blob.
+        const body = canConstructResponseFromBodyStream() ?
+            clonedResponse.body : await clonedResponse.blob();
+        return new Response(body, modifiedResponseInit);
+    }
+
+    /*
+      Copyright 2020 Google LLC
+
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    /**
+     * A [Strategy]{@link module:workbox-strategies.Strategy} implementation
+     * specifically designed to work with
+     * [PrecacheController]{@link module:workbox-precaching.PrecacheController}
+     * to both cache and fetch precached assets.
+     *
+     * Note: an instance of this class is created automatically when creating a
+     * `PrecacheController`; it's generally not necessary to create this yourself.
+     *
+     * @extends module:workbox-strategies.Strategy
+     * @memberof module:workbox-precaching
+     */
+    class PrecacheStrategy extends Strategy {
+        /**
+         *
+         * @param {Object} [options]
+         * @param {string} [options.cacheName] Cache name to store and retrieve
+         * requests. Defaults to the cache names provided by
+         * [workbox-core]{@link module:workbox-core.cacheNames}.
+         * @param {Array<Object>} [options.plugins] [Plugins]{@link https://developers.google.com/web/tools/workbox/guides/using-plugins}
+         * to use in conjunction with this caching strategy.
+         * @param {Object} [options.fetchOptions] Values passed along to the
+         * [`init`]{@link https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters}
+         * of all fetch() requests made by this strategy.
+         * @param {Object} [options.matchOptions] The
+         * [`CacheQueryOptions`]{@link https://w3c.github.io/ServiceWorker/#dictdef-cachequeryoptions}
+         * for any `cache.match()` or `cache.put()` calls made by this strategy.
+         * @param {boolean} [options.fallbackToNetwork=true] Whether to attempt to
+         * get the response from the network if there's a precache miss.
+         */
+        constructor(options = {}) {
+            options.cacheName = cacheNames.getPrecacheName(options.cacheName);
+            super(options);
+            this._fallbackToNetwork = options.fallbackToNetwork === false ? false : true;
+            // Redirected responses cannot be used to satisfy a navigation request, so
+            // any redirected response must be "copied" rather than cloned, so the new
+            // response doesn't contain the `redirected` flag. See:
+            // https://bugs.chromium.org/p/chromium/issues/detail?id=669363&desc=2#c1
+            this.plugins.push(PrecacheStrategy.copyRedirectedCacheableResponsesPlugin);
+        }
+        /**
+         * @private
+         * @param {Request|string} request A request to run this strategy for.
+         * @param {module:workbox-strategies.StrategyHandler} handler The event that
+         *     triggered the request.
+         * @return {Promise<Response>}
+         */
+        async _handle(request, handler) {
+            const response = await handler.cacheMatch(request);
+            if (!response) {
+                // If this is an `install` event then populate the cache. If this is a
+                // `fetch` event (or any other event) then respond with the cached
+                // response.
+                if (handler.event && handler.event.type === 'install') {
+                    return await this._handleInstall(request, handler);
+                }
+                return await this._handleFetch(request, handler);
+            }
+            return response;
+        }
+        async _handleFetch(request, handler) {
+            let response;
+            // Fall back to the network if we don't have a cached response
+            // (perhaps due to manual cache cleanup).
+            if (this._fallbackToNetwork) {
+                {
+                    logger.warn(`The precached response for ` +
+                        `${getFriendlyURL(request.url)} in ${this.cacheName} was not ` +
+                        `found. Falling back to the network instead.`);
+                }
+                response = await handler.fetch(request);
+            }
+            else {
+                // This shouldn't normally happen, but there are edge cases:
+                // https://github.com/GoogleChrome/workbox/issues/1441
+                throw new WorkboxError('missing-precache-entry', {
+                    cacheName: this.cacheName,
+                    url: request.url,
+                });
+            }
+            {
+                // Params in handlers is type any, can't change right now.
+                // eslint-disable-next-line
+                const cacheKey = handler.params && handler.params.cacheKey ||
+                    await handler.getCacheKey(request, 'read');
+                // Workbox is going to handle the route.
+                // print the routing details to the console.
+                logger.groupCollapsed(`Precaching is responding to: ` +
+                    getFriendlyURL(request.url));
+                // cacheKey is type any, can't change right now.
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                logger.log(`Serving the precached url: ${getFriendlyURL(cacheKey.url)}`);
+                logger.groupCollapsed(`View request details here.`);
+                logger.log(request);
+                logger.groupEnd();
+                logger.groupCollapsed(`View response details here.`);
+                logger.log(response);
+                logger.groupEnd();
+                logger.groupEnd();
+            }
+            return response;
+        }
+        async _handleInstall(request, handler) {
+            this._useDefaultCacheabilityPluginIfNeeded();
+            const response = await handler.fetch(request);
+            // Make sure we defer cachePut() until after we know the response
+            // should be cached; see https://github.com/GoogleChrome/workbox/issues/2737
+            const wasCached = await handler.cachePut(request, response.clone());
+            if (!wasCached) {
+                // Throwing here will lead to the `install` handler failing, which
+                // we want to do if *any* of the responses aren't safe to cache.
+                throw new WorkboxError('bad-precaching-response', {
+                    url: request.url,
+                    status: response.status,
+                });
+            }
+            return response;
+        }
+        /**
+         * This method is complex, as there a number of things to account for:
+         *
+         * The `plugins` array can be set at construction, and/or it might be added to
+         * to at any time before the strategy is used.
+         *
+         * At the time the strategy is used (i.e. during an `install` event), there
+         * needs to be at least one plugin that implements `cacheWillUpdate` in the
+         * array, other than `copyRedirectedCacheableResponsesPlugin`.
+         *
+         * - If this method is called and there are no suitable `cacheWillUpdate`
+         * plugins, we need to add `defaultPrecacheCacheabilityPlugin`.
+         *
+         * - If this method is called and there is exactly one `cacheWillUpdate`, then
+         * we don't have to do anything (this might be a previously added
+         * `defaultPrecacheCacheabilityPlugin`, or it might be a custom plugin).
+         *
+         * - If this method is called and there is more than one `cacheWillUpdate`,
+         * then we need to check if one is `defaultPrecacheCacheabilityPlugin`. If so,
+         * we need to remove it. (This situation is unlikely, but it could happen if
+         * the strategy is used multiple times, the first without a `cacheWillUpdate`,
+         * and then later on after manually adding a custom `cacheWillUpdate`.)
+         *
+         * See https://github.com/GoogleChrome/workbox/issues/2737 for more context.
+         *
+         * @private
+         */
+        _useDefaultCacheabilityPluginIfNeeded() {
+            let defaultPluginIndex = null;
+            let cacheWillUpdatePluginCount = 0;
+            for (const [index, plugin] of this.plugins.entries()) {
+                // Ignore the copy redirected plugin when determining what to do.
+                if (plugin === PrecacheStrategy.copyRedirectedCacheableResponsesPlugin) {
+                    continue;
+                }
+                // Save the default plugin's index, in case it needs to be removed.
+                if (plugin === PrecacheStrategy.defaultPrecacheCacheabilityPlugin) {
+                    defaultPluginIndex = index;
+                }
+                if (plugin.cacheWillUpdate) {
+                    cacheWillUpdatePluginCount++;
+                }
+            }
+            if (cacheWillUpdatePluginCount === 0) {
+                this.plugins.push(PrecacheStrategy.defaultPrecacheCacheabilityPlugin);
+            }
+            else if (cacheWillUpdatePluginCount > 1 && defaultPluginIndex !== null) {
+                // Only remove the default plugin; multiple custom plugins are allowed.
+                this.plugins.splice(defaultPluginIndex, 1);
+            }
+            // Nothing needs to be done if cacheWillUpdatePluginCount is 1
+        }
+    }
+    PrecacheStrategy.defaultPrecacheCacheabilityPlugin = {
+        async cacheWillUpdate({ response }) {
+            if (!response || response.status >= 400) {
+                return null;
+            }
+            return response;
+        }
+    };
+    PrecacheStrategy.copyRedirectedCacheableResponsesPlugin = {
+        async cacheWillUpdate({ response }) {
+            return response.redirected ? await copyResponse(response) : response;
+        }
+    };
+
+    /*
+      Copyright 2019 Google LLC
+
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    /**
+     * Performs efficient precaching of assets.
+     *
+     * @memberof module:workbox-precaching
+     */
+    class PrecacheController {
+        /**
+         * Create a new PrecacheController.
+         *
+         * @param {Object} [options]
+         * @param {string} [options.cacheName] The cache to use for precaching.
+         * @param {string} [options.plugins] Plugins to use when precaching as well
+         * as responding to fetch events for precached assets.
+         * @param {boolean} [options.fallbackToNetwork=true] Whether to attempt to
+         * get the response from the network if there's a precache miss.
+         */
+        constructor({ cacheName, plugins = [], fallbackToNetwork = true } = {}) {
+            this._urlsToCacheKeys = new Map();
+            this._urlsToCacheModes = new Map();
+            this._cacheKeysToIntegrities = new Map();
+            this._strategy = new PrecacheStrategy({
+                cacheName: cacheNames.getPrecacheName(cacheName),
+                plugins: [
+                    ...plugins,
+                    new PrecacheCacheKeyPlugin({ precacheController: this }),
+                ],
+                fallbackToNetwork,
+            });
+            // Bind the install and activate methods to the instance.
+            this.install = this.install.bind(this);
+            this.activate = this.activate.bind(this);
+        }
+        /**
+         * @type {module:workbox-precaching.PrecacheStrategy} The strategy created by this controller and
+         * used to cache assets and respond to fetch events.
+         */
+        get strategy() {
+            return this._strategy;
+        }
+        /**
+         * Adds items to the precache list, removing any duplicates and
+         * stores the files in the
+         * ["precache cache"]{@link module:workbox-core.cacheNames} when the service
+         * worker installs.
+         *
+         * This method can be called multiple times.
+         *
+         * @param {Array<Object|string>} [entries=[]] Array of entries to precache.
+         */
+        precache(entries) {
+            this.addToCacheList(entries);
+            if (!this._installAndActiveListenersAdded) {
+                self.addEventListener('install', this.install);
+                self.addEventListener('activate', this.activate);
+                this._installAndActiveListenersAdded = true;
+            }
+        }
+        /**
+         * This method will add items to the precache list, removing duplicates
+         * and ensuring the information is valid.
+         *
+         * @param {Array<module:workbox-precaching.PrecacheController.PrecacheEntry|string>} entries
+         *     Array of entries to precache.
+         */
+        addToCacheList(entries) {
+            {
+                finalAssertExports.isArray(entries, {
+                    moduleName: 'workbox-precaching',
+                    className: 'PrecacheController',
+                    funcName: 'addToCacheList',
+                    paramName: 'entries',
+                });
+            }
+            const urlsToWarnAbout = [];
+            for (const entry of entries) {
+                // See https://github.com/GoogleChrome/workbox/issues/2259
+                if (typeof entry === 'string') {
+                    urlsToWarnAbout.push(entry);
+                }
+                else if (entry && entry.revision === undefined) {
+                    urlsToWarnAbout.push(entry.url);
+                }
+                const { cacheKey, url } = createCacheKey(entry);
+                const cacheMode = (typeof entry !== 'string' && entry.revision) ?
+                    'reload' : 'default';
+                if (this._urlsToCacheKeys.has(url) &&
+                    this._urlsToCacheKeys.get(url) !== cacheKey) {
+                    throw new WorkboxError('add-to-cache-list-conflicting-entries', {
+                        firstEntry: this._urlsToCacheKeys.get(url),
+                        secondEntry: cacheKey,
+                    });
+                }
+                if (typeof entry !== 'string' && entry.integrity) {
+                    if (this._cacheKeysToIntegrities.has(cacheKey) &&
+                        this._cacheKeysToIntegrities.get(cacheKey) !== entry.integrity) {
+                        throw new WorkboxError('add-to-cache-list-conflicting-integrities', {
+                            url,
+                        });
+                    }
+                    this._cacheKeysToIntegrities.set(cacheKey, entry.integrity);
+                }
+                this._urlsToCacheKeys.set(url, cacheKey);
+                this._urlsToCacheModes.set(url, cacheMode);
+                if (urlsToWarnAbout.length > 0) {
+                    const warningMessage = `Workbox is precaching URLs without revision ` +
+                        `info: ${urlsToWarnAbout.join(', ')}\nThis is generally NOT safe. ` +
+                        `Learn more at https://bit.ly/wb-precache`;
+                    {
+                        logger.warn(warningMessage);
+                    }
+                }
+            }
+        }
+        /**
+         * Precaches new and updated assets. Call this method from the service worker
+         * install event.
+         *
+         * Note: this method calls `event.waitUntil()` for you, so you do not need
+         * to call it yourself in your event handlers.
+         *
+         * @param {ExtendableEvent} event
+         * @return {Promise<module:workbox-precaching.InstallResult>}
+         */
+        install(event) {
+            // waitUntil returns Promise<any>
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            return waitUntil(event, async () => {
+                const installReportPlugin = new PrecacheInstallReportPlugin();
+                this.strategy.plugins.push(installReportPlugin);
+                // Cache entries one at a time.
+                // See https://github.com/GoogleChrome/workbox/issues/2528
+                for (const [url, cacheKey] of this._urlsToCacheKeys) {
+                    const integrity = this._cacheKeysToIntegrities.get(cacheKey);
+                    const cacheMode = this._urlsToCacheModes.get(url);
+                    const request = new Request(url, {
+                        integrity,
+                        cache: cacheMode,
+                        credentials: 'same-origin',
+                    });
+                    await Promise.all(this.strategy.handleAll({
+                        params: { cacheKey },
+                        request,
+                        event,
+                    }));
+                }
+                const { updatedURLs, notUpdatedURLs } = installReportPlugin;
+                {
+                    printInstallDetails(updatedURLs, notUpdatedURLs);
+                }
+                return { updatedURLs, notUpdatedURLs };
+            });
+        }
+        /**
+         * Deletes assets that are no longer present in the current precache manifest.
+         * Call this method from the service worker activate event.
+         *
+         * Note: this method calls `event.waitUntil()` for you, so you do not need
+         * to call it yourself in your event handlers.
+         *
+         * @param {ExtendableEvent} event
+         * @return {Promise<module:workbox-precaching.CleanupResult>}
+         */
+        activate(event) {
+            // waitUntil returns Promise<any>
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            return waitUntil(event, async () => {
+                const cache = await self.caches.open(this.strategy.cacheName);
+                const currentlyCachedRequests = await cache.keys();
+                const expectedCacheKeys = new Set(this._urlsToCacheKeys.values());
+                const deletedURLs = [];
+                for (const request of currentlyCachedRequests) {
+                    if (!expectedCacheKeys.has(request.url)) {
+                        await cache.delete(request);
+                        deletedURLs.push(request.url);
+                    }
+                }
+                {
+                    printCleanupDetails(deletedURLs);
+                }
+                return { deletedURLs };
+            });
+        }
+        /**
+         * Returns a mapping of a precached URL to the corresponding cache key, taking
+         * into account the revision information for the URL.
+         *
+         * @return {Map<string, string>} A URL to cache key mapping.
+         */
+        getURLsToCacheKeys() {
+            return this._urlsToCacheKeys;
+        }
+        /**
+         * Returns a list of all the URLs that have been precached by the current
+         * service worker.
+         *
+         * @return {Array<string>} The precached URLs.
+         */
+        getCachedURLs() {
+            return [...this._urlsToCacheKeys.keys()];
+        }
+        /**
+         * Returns the cache key used for storing a given URL. If that URL is
+         * unversioned, like `/index.html', then the cache key will be the original
+         * URL with a search parameter appended to it.
+         *
+         * @param {string} url A URL whose cache key you want to look up.
+         * @return {string} The versioned URL that corresponds to a cache key
+         * for the original URL, or undefined if that URL isn't precached.
+         */
+        getCacheKeyForURL(url) {
+            const urlObject = new URL(url, location.href);
+            return this._urlsToCacheKeys.get(urlObject.href);
+        }
+        /**
+         * This acts as a drop-in replacement for
+         * [`cache.match()`](https://developer.mozilla.org/en-US/docs/Web/API/Cache/match)
+         * with the following differences:
+         *
+         * - It knows what the name of the precache is, and only checks in that cache.
+         * - It allows you to pass in an "original" URL without versioning parameters,
+         * and it will automatically look up the correct cache key for the currently
+         * active revision of that URL.
+         *
+         * E.g., `matchPrecache('index.html')` will find the correct precached
+         * response for the currently active service worker, even if the actual cache
+         * key is `'/index.html?__WB_REVISION__=1234abcd'`.
+         *
+         * @param {string|Request} request The key (without revisioning parameters)
+         * to look up in the precache.
+         * @return {Promise<Response|undefined>}
+         */
+        async matchPrecache(request) {
+            const url = request instanceof Request ? request.url : request;
+            const cacheKey = this.getCacheKeyForURL(url);
+            if (cacheKey) {
+                const cache = await self.caches.open(this.strategy.cacheName);
+                return cache.match(cacheKey);
+            }
+            return undefined;
+        }
+        /**
+         * Returns a function that looks up `url` in the precache (taking into
+         * account revision information), and returns the corresponding `Response`.
+         *
+         * @param {string} url The precached URL which will be used to lookup the
+         * `Response`.
+         * @return {module:workbox-routing~handlerCallback}
+         */
+        createHandlerBoundToURL(url) {
+            const cacheKey = this.getCacheKeyForURL(url);
+            if (!cacheKey) {
+                throw new WorkboxError('non-precached-url', { url });
+            }
+            return (options) => {
+                options.request = new Request(url);
+                options.params = Object.assign({ cacheKey }, options.params);
+                return this.strategy.handle(options);
+            };
+        }
+    }
+
+    /*
+      Copyright 2019 Google LLC
+
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    let precacheController;
+    /**
+     * @return {PrecacheController}
+     * @private
+     */
+    const getOrCreatePrecacheController = () => {
+        if (!precacheController) {
+            precacheController = new PrecacheController();
+        }
+        return precacheController;
+    };
+
+    /*
+      Copyright 2018 Google LLC
+
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    /**
+     * Removes any URL search parameters that should be ignored.
+     *
+     * @param {URL} urlObject The original URL.
+     * @param {Array<RegExp>} ignoreURLParametersMatching RegExps to test against
+     * each search parameter name. Matches mean that the search parameter should be
+     * ignored.
+     * @return {URL} The URL with any ignored search parameters removed.
+     *
+     * @private
+     * @memberof module:workbox-precaching
+     */
+    function removeIgnoredSearchParams(urlObject, ignoreURLParametersMatching = []) {
+        // Convert the iterable into an array at the start of the loop to make sure
+        // deletion doesn't mess up iteration.
+        for (const paramName of [...urlObject.searchParams.keys()]) {
+            if (ignoreURLParametersMatching.some((regExp) => regExp.test(paramName))) {
+                urlObject.searchParams.delete(paramName);
+            }
+        }
+        return urlObject;
+    }
+
+    /*
+      Copyright 2019 Google LLC
+
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    /**
+     * Generator function that yields possible variations on the original URL to
+     * check, one at a time.
+     *
+     * @param {string} url
+     * @param {Object} options
+     *
+     * @private
+     * @memberof module:workbox-precaching
+     */
+    function* generateURLVariations(url, { ignoreURLParametersMatching = [/^utm_/, /^fbclid$/], directoryIndex = 'index.html', cleanURLs = true, urlManipulation, } = {}) {
+        const urlObject = new URL(url, location.href);
+        urlObject.hash = '';
+        yield urlObject.href;
+        const urlWithoutIgnoredParams = removeIgnoredSearchParams(urlObject, ignoreURLParametersMatching);
+        yield urlWithoutIgnoredParams.href;
+        if (directoryIndex && urlWithoutIgnoredParams.pathname.endsWith('/')) {
+            const directoryURL = new URL(urlWithoutIgnoredParams.href);
+            directoryURL.pathname += directoryIndex;
+            yield directoryURL.href;
+        }
+        if (cleanURLs) {
+            const cleanURL = new URL(urlWithoutIgnoredParams.href);
+            cleanURL.pathname += '.html';
+            yield cleanURL.href;
+        }
+        if (urlManipulation) {
+            const additionalURLs = urlManipulation({ url: urlObject });
+            for (const urlToAttempt of additionalURLs) {
+                yield urlToAttempt.href;
+            }
+        }
+    }
+
+    /*
+      Copyright 2020 Google LLC
+
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    /**
+     * A subclass of [Route]{@link module:workbox-routing.Route} that takes a
+     * [PrecacheController]{@link module:workbox-precaching.PrecacheController}
+     * instance and uses it to match incoming requests and handle fetching
+     * responses from the precache.
+     *
+     * @memberof module:workbox-precaching
+     * @extends module:workbox-routing.Route
+     */
+    class PrecacheRoute extends Route {
+        /**
+         * @param {PrecacheController} precacheController A `PrecacheController`
+         * instance used to both match requests and respond to fetch events.
+         * @param {Object} [options] Options to control how requests are matched
+         * against the list of precached URLs.
+         * @param {string} [options.directoryIndex=index.html] The `directoryIndex` will
+         * check cache entries for a URLs ending with '/' to see if there is a hit when
+         * appending the `directoryIndex` value.
+         * @param {Array<RegExp>} [options.ignoreURLParametersMatching=[/^utm_/, /^fbclid$/]] An
+         * array of regex's to remove search params when looking for a cache match.
+         * @param {boolean} [options.cleanURLs=true] The `cleanURLs` option will
+         * check the cache for the URL with a `.html` added to the end of the end.
+         * @param {module:workbox-precaching~urlManipulation} [options.urlManipulation]
+         * This is a function that should take a URL and return an array of
+         * alternative URLs that should be checked for precache matches.
+         */
+        constructor(precacheController, options) {
+            const match = ({ request }) => {
+                const urlsToCacheKeys = precacheController.getURLsToCacheKeys();
+                for (const possibleURL of generateURLVariations(request.url, options)) {
+                    const cacheKey = urlsToCacheKeys.get(possibleURL);
+                    if (cacheKey) {
+                        return { cacheKey };
+                    }
+                }
+                {
+                    logger.debug(`Precaching did not find a match for ` +
+                        getFriendlyURL(request.url));
+                }
+                return;
+            };
+            super(match, precacheController.strategy);
+        }
+    }
+
+    /*
+      Copyright 2019 Google LLC
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    /**
+     * Add a `fetch` listener to the service worker that will
+     * respond to
+     * [network requests]{@link https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers#Custom_responses_to_requests}
+     * with precached assets.
+     *
+     * Requests for assets that aren't precached, the `FetchEvent` will not be
+     * responded to, allowing the event to fall through to other `fetch` event
+     * listeners.
+     *
+     * @param {Object} [options] See
+     * [PrecacheRoute options]{@link module:workbox-precaching.PrecacheRoute}.
+     *
+     * @memberof module:workbox-precaching
+     */
+    function addRoute(options) {
+        const precacheController = getOrCreatePrecacheController();
+        const precacheRoute = new PrecacheRoute(precacheController, options);
+        registerRoute(precacheRoute);
+    }
+
+    /*
+      Copyright 2019 Google LLC
+
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    /**
+     * Adds items to the precache list, removing any duplicates and
+     * stores the files in the
+     * ["precache cache"]{@link module:workbox-core.cacheNames} when the service
+     * worker installs.
+     *
+     * This method can be called multiple times.
+     *
+     * Please note: This method **will not** serve any of the cached files for you.
+     * It only precaches files. To respond to a network request you call
+     * [addRoute()]{@link module:workbox-precaching.addRoute}.
+     *
+     * If you have a single array of files to precache, you can just call
+     * [precacheAndRoute()]{@link module:workbox-precaching.precacheAndRoute}.
+     *
+     * @param {Array<Object|string>} [entries=[]] Array of entries to precache.
+     *
+     * @memberof module:workbox-precaching
+     */
+    function precache(entries) {
+        const precacheController = getOrCreatePrecacheController();
+        precacheController.precache(entries);
+    }
+
+    /*
+      Copyright 2019 Google LLC
+
+      Use of this source code is governed by an MIT-style
+      license that can be found in the LICENSE file or at
+      https://opensource.org/licenses/MIT.
+    */
+    /**
+     * This method will add entries to the precache list and add a route to
+     * respond to fetch events.
+     *
+     * This is a convenience method that will call
+     * [precache()]{@link module:workbox-precaching.precache} and
+     * [addRoute()]{@link module:workbox-precaching.addRoute} in a single call.
+     *
+     * @param {Array<Object|string>} entries Array of entries to precache.
+     * @param {Object} [options] See
+     * [PrecacheRoute options]{@link module:workbox-precaching.PrecacheRoute}.
+     *
+     * @memberof module:workbox-precaching
+     */
+    function precacheAndRoute(entries, options) {
+        precache(entries);
+        addRoute(options);
+    }
+
+    //precache
+    precacheAndRoute(self.__WB_MANIFEST||[]);
+
+    // html resources
+    registerRoute(({request}) => request.destination === 'document',
+      new NetworkFirst({
+        cacheName: 'blog-html',
         plugins: [
           new CacheableResponsePlugin({
-            statuses: [0, 200],
-          }),
-          new BroadcastUpdatePlugin({
-            headersToCheck:['ETag']
+            statuses: [0, 200]
           })
-        ],
-      }),
+        ]
+      })
     );
 
-    // google fonts
+    // styles
+    registerRoute(({request}) => request.destination === 'style',
+      new StaleWhileRevalidate({
+        cacheName: 'blog-css',
+        plugins: [
+          new CacheableResponsePlugin({
+            statuses: [0, 200]
+          }),
+          new BroadcastUpdatePlugin({
+            headersToCheck: ['ETag']
+          })
+        ]
+      })
+    );
+
+    // js
+    registerRoute(({request}) => request.destination === 'script',
+      new NetworkFirst({
+        cacheName: 'blog-js',
+        plugins: [
+          new CacheableResponsePlugin({
+            statuses: [0, 200]
+          })
+        ]
+      })
+    );
+
+    // google font style
     registerRoute(new RegExp('https://fonts\.googleapis\.com/'),
       new StaleWhileRevalidate({
         cacheName: 'google-fonts-stylesheets',
       }),
     );
 
+    // google font
     registerRoute(new RegExp('https://fonts\.gstatic\.com/'),
       new CacheFirst({
         cacheName: 'google-fonts-webfonts',
@@ -3652,7 +4902,7 @@
     // image from any where
     registerRoute(({request}) => request.destination === 'image',
       new CacheFirst({
-        cacheName: 'app-images',
+        cacheName: 'blog-image',
         plugins: [
           new CacheableResponsePlugin({
             statuses: [0, 200],
