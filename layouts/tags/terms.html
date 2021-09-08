@@ -22,7 +22,7 @@
             {{ range $name,$taxonomies := $.Site.Taxonomies.tags }}
             {{ $tagCount := len $taxonomies.Pages }}
             {{ $fontSize := (add $smallestFontSize (mul (sub $tagCount $min) $fontSizeStep))}}
-            <a href="{{ $taxonomies.Page.Path | absURL}}" class="tagcloud-item" style="font-size: {{$fontSize}}rem;">
+            <a href="{{ $taxonomies.Page.Path | relURL}}" class="tagcloud-item" style="font-size: {{$fontSize}}rem;">
                 {{$name}}<sup>{{$tagCount}}</sup>
             </a>
             {{ end }}
