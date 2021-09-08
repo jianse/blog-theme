@@ -38,7 +38,9 @@
                         {{ if not .Lastmod.IsZero }}
                         <span title="最后修改时间">
                             <i class="material-icons">create</i>
-                            <time itemprop="lastMod">{{ i18n "format_date_tosec" .Page.Lastmod }}</time>
+                            <time itemprop="lastMod">
+                                {{ i18n "format_date_tosec" .Page.Lastmod }}
+                            </time>
                         </span>
                         {{ end }}
 

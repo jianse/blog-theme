@@ -1,0 +1,16 @@
+<div class="post-item-wrapper">
+    <div class="post-item post-item-no-gaps">
+        <div class="post-item-info-wrapper">
+            <div class="post-item-title">
+                {{ if .Params.categories}}
+                <a href="{{ "/categories/" | relLangURL }}{{.Params.categories|urlize}}">[{{- .Params.categories -}}]</a>
+                {{ end }}
+                <a href="{{.RelPermalink}}">
+                    {{.Title}}
+                </a>
+            </div>
+            {{ partial "post-item-meta.html" . }}
+        </div>
+        {{ partial "featured-image.html" . }}
+    </div>
+</div>

@@ -10,21 +10,10 @@
                 </div>
             </div>
         </div>
-        {{ $paginator := .Paginate (where .Pages.ByWeight "Type" "ne" "ordinary") }}
+        
+        {{ $paginator := .Paginate .Data.category }}
         {{ range $paginator.Pages }}
         {{ partial "posts/post-item.html" . }}
-        {{/* <a href="{{ .RelPermalink }}" class="a-block">
-            <div class="post-item-wrapper">
-                <div class="post-item post-item-no-gaps">
-                    <div class="post-item-info-wrapper">
-                        <div class="post-item-title">
-                            {{.Title}}
-                        </div>
-                        {{ partial "post-item-meta.html" . }}
-                    </div>
-                </div>
-            </div>
-        </a> */}}
         {{- end -}}
         {{ .Page.Scratch.Set "has_paginator" true }}
     </div>

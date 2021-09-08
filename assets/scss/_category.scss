@@ -1,0 +1,27 @@
+.category-item {
+    padding: 15px 20px;
+
+    & a {
+        color: $color-accent;
+        &:hover {
+            text-decoration: underline;
+            color: $color-accent;
+        }
+    }
+}
+
+.category-container {
+    padding-left: 15px;
+    @media screen and (max-width: $single-column-max-width) {
+        padding-left: 0;
+    }
+}
+
+.category-item-title {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.category-item-list {
+    font-size: 1.25rem;
+}

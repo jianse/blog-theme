@@ -135,19 +135,24 @@
         transition: all 0.2s linear;
       }
 
+      & a:hover{
+        color: $dark-accent;
+        text-decoration: underline;
+      }
+
       &:not(.post-item-wrapper-no-hover):hover {
         text-decoration: none;
         @include background("color-post-item-hover-bg");
 
-        .post-item-title {
-          text-decoration: underline;
-          text-decoration-style: 2px solid $color-accent;
-          text-underline-position: under;
-        }
+        // .post-item-title {
+        //   text-decoration: underline;
+        //   text-decoration-style: 2px solid $color-accent;
+        //   text-underline-position: under;
+        // }
 
-        * {
-          color: $dark-accent;
-        }
+        // * {
+        //   color: $dark-accent;
+        // }
 
         @media screen and (max-width: $single-column-max-width) {
           .post-item-title {
