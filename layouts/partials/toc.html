@@ -1,4 +1,4 @@
-{{if .TableOfContents }}
+{{ if and .TableOfContents (default false .Params.toc) }}
 {{ $toc := .TableOfContents }}
 
 {{/*  remove write char  */}}
