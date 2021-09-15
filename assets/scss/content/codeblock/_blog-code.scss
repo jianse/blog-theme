@@ -1,0 +1,77 @@
+.blog-code {
+    border: 2px solid;
+    // @include border-color(gray);
+    border-color: gray;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+  
+  pre[class|=language] {
+    margin: 0;
+    overflow: auto;
+  }
+  
+  .blog-code__title-container {
+    display: flex;
+    // @include background-color("color-bg");
+    background-color: lightgray;
+  }
+  
+  .blog-code__title {
+    flex: auto;
+  }
+  
+  .blog-code__title span {
+    padding: 5px 10px;
+    display: inline-block;
+    color: black;
+    // @include color("color-text")
+  }
+  
+  .blog-code__controls {
+    flex: initial;
+    display: flex;
+  }
+  
+  .blog-code__controls button {
+    padding: 5px 10px;
+    flex: 1;
+    margin: 0;
+    border: none;
+    outline: none;
+    background-color: transparent;
+    border-left: 1px solid gray;
+    display: flex;
+  }
+  
+  .code-container {
+    position: relative;
+  }
+  
+  .btn-copy {
+    //position: absolute;
+    display: flex;
+    border:none;
+    border-right: 1px solid gray;
+    //border-radius: 5px;
+    overflow: hidden;
+    background-color: lightgray;
+    padding: 5px 10px;
+    //right:10px;
+    //top: 10px;
+  }
+  
+  .btn-expand-icon {
+    transform: rotate(90deg);
+    transition: transform .3s;
+  }
+  
+  .btn-fold-icon {
+    transition: transform .3s;
+    transform: rotate(0);
+  }
+  
+  //el popover
+  @import "el-popover";
+  @import "el-popper";

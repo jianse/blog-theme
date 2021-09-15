@@ -26,8 +26,20 @@
     }
 }
 
+@mixin border-color($color) {
+    @include themeify{
+        border-color: themed($color);
+    }
+}
+
 @mixin background($color) {
     @include themeify {
         background: themed($color);
+    }
+}
+
+@mixin background-color($color) {
+    @include themeify {
+        background-color: themed($color);
     }
 }

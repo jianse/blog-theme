@@ -5,7 +5,8 @@
 {{ end }}
 
 {{ if .Site.Params.enableCodeLangTag }}
-{{ $content = replaceRE `<pre (.+?><code class="(\w+-(\w+))")` `<pre class="$2" data-lang="$3" $1` $content }}
+{{ $content = replaceRE `<pre (.+?><code class="(\w+-(\w+))")` `<blog-code :language="'$3'"><pre class="$2" data-lang="$3" $1` $content }}
+{{ $content = replaceRE `</pre>` `</pre></blog-code>` $content}}
 {{end}}
 
 {{ if .Site.Params.openLinkInNewTab }}

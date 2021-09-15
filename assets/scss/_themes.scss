@@ -1,3 +1,5 @@
+@import "palette";
+
 $color-accent: #1976d2;
 $color-warn: #fa8c16;
 $color-error: #ff4d4f;
@@ -70,6 +72,7 @@ $theme-light: (
     color-warn: #fa8c16,
     color-error: #ff4d4f,
     color-success: #52c41a,
+    color-primary: $color-accent,
     color-text: $color-text,
     color-bg-toc: rgba($color-accent, 0.05),
     color-toc-active: darken($color-accent, 10%),
@@ -95,6 +98,7 @@ $theme-dark: (
     color-warn: #fa8c16,
     color-error: #ff4d4f,
     color-success: #52c41a,
+    color-primary: $color-accent,
     color-text: darken(#fff, 10%),
     color-bg-toc: lighten($dark-mode-front-container-background, 10%),
     color-toc-active: $light-accent,
