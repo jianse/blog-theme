@@ -7,7 +7,8 @@
 
         {{if and (.IsPage) (.Params.date)}}
         <a href="{{.RelPermalink}}" class="a-block">
-            <div class="post-item-wrapper">
+            {{ partial "posts/post-item.html" . }}
+            <!-- <div class="post-item-wrapper">
                 <div class="post-item post-item-no-divider">
                     <div class="post-item-info-wrapper">
                         <div class="post-item-title">
@@ -20,7 +21,7 @@
                     </div>
                     {{ partial "featured-image.html" . }} 
                 </div>
-            </div>
+            </div> -->
             {{ end }}
         </a>
         {{ end }}
