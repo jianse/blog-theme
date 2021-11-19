@@ -47,6 +47,10 @@
   
   .code-container {
     position: relative;
+    code {
+      // firefox scrollbar
+      scrollbar-width: thin;
+    }
   }
   
   .btn-copy {
